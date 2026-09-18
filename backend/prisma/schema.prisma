@@ -1,0 +1,148 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  username          String    @unique
+  password          String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastLoginAt       DateTime?
+
+  /// description "nom + adjectif", ids définis dans src/titles/titles.ts
+  titleNoun         String?
+  titleAdjective    String?
+  favoriteRegion    String?
+  /// objectif hebdo global, en minutes
+  weeklyGoalMinutes Int       @default(600)
+
+  pokemon           OwnedPokemon[]
+  themes            Theme[]
+  sessions          WorkSession[]
+  sentRequests      Friendship[] @relation("requester")
+  receivedRequests  Friendship[] @relation("addressee")
+}
+
+/// Données statiques du Pokédex (seed depuis prisma/data/pokemon.json)
+model Pokemon {
+  /// numéro du Pokédex national
+  id        Int      @id
+  slug      String   @unique
+  /// nom du fichier dans frontend/public/pokemon (sans .png)
+  image     String
+  name      String
+  types     String[]
+  region    String
+  legendary Boolean  @default(false)
+  mythical  Boolean  @default(false)
+
+  owners    OwnedPokemon[]
+  captures  SessionCapture[]
+
+  @@index([region])
+}
+
+model OwnedPokemon {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  pokemonId       Int
+  /// monte de 1 à chaque doublon capturé
+  level           Int      @default(1)
+  captureCount    Int      @default(1)
+  /// 1..6 si dans les favoris, sinon null
+  favoriteSlot    Int?
+  firstCapturedAt DateTime @default(now())
+  lastCapturedAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pokemon Pokemon @relation(fields: [pokemonId], references: [id])
+
+  @@unique([userId, pokemonId])
+  @@unique([userId, favoriteSlot])
+}
+
+model Theme {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  name              String
+  color             String
+  emoji             String
+  /// objectif hebdo spécifique à ce thème, en minutes (optionnel)
+  weeklyGoalMinutes Int?
+  createdAt         DateTime @default(now())
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions WorkSession[]
+
+  @@unique([userId, name])
+}
+
+enum SessionStatus {
+  RUNNING
+  PAUSED
+  COMPLETED
+  ABANDONED
+}
+
+model WorkSession {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  themeId        Int?
+  region         String
+  plannedMinutes Int
+  status         SessionStatus @default(RUNNING)
+  startedAt      DateTime      @default(now())
+  /// début de la pause en cours
+  pausedAt       DateTime?
+  /// cumul des pauses terminées
+  pausedMs       Int           @default(0)
+  endedAt        DateTime?
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme    Theme?           @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  captures SessionCapture[]
+
+  @@index([userId, status])
+  @@index([userId, endedAt])
+}
+
+model SessionCapture {
+  id         Int      @id @default(autoincrement())
+  sessionId  Int
+  pokemonId  Int
+  /// true si c'était la première fois que le dresseur l'attrapait
+  isNew      Boolean
+  levelAfter Int
+  capturedAt DateTime @default(now())
+
+  session WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  pokemon Pokemon     @relation(fields: [pokemonId], references: [id])
+
+  @@index([sessionId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Friendship {
+  id          Int              @id @default(autoincrement())
+  requesterId Int
+  addresseeId Int
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+
+  requester User @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee User @relation("addressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+}

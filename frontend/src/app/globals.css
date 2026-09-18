@@ -1,0 +1,180 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ---------- Palette ---------- */
+:root {
+  --bg: #18D384;
+  --bg-dark: #0E8A55;     /* bordures, ombre du texte */
+  --orange: #F2B56C;
+  --orange-dark: #B8742A;
+  --blue: #65B5F6;
+  --blue-dark: #2A78B8;
+  --text: #FFFFFF;
+
+  /* teintes dérivées pour les dégradés verticaux */
+  --bg-light: color-mix(in srgb, var(--bg) 70%, white);
+  --bg-deep: color-mix(in srgb, var(--bg) 80%, var(--bg-dark));
+  --orange-light: color-mix(in srgb, var(--orange) 65%, white);
+  --orange-deep: color-mix(in srgb, var(--orange) 75%, var(--orange-dark));
+  --blue-light: color-mix(in srgb, var(--blue) 65%, white);
+  --blue-deep: color-mix(in srgb, var(--blue) 75%, var(--blue-dark));
+  --ink: #0B4A30; /* texte sombre dans les champs blancs */
+
+  /* tokens shadcn mappés sur la palette */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--bg);
+  --card-foreground: var(--text);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--orange);
+  --primary-foreground: var(--text);
+  --secondary: var(--blue);
+  --secondary-foreground: var(--text);
+  --muted: var(--bg-deep);
+  --muted-foreground: #E6FFF3;
+  --accent: var(--bg-light);
+  --accent-foreground: var(--ink);
+  --destructive: #D93A3A;
+  --border: var(--bg-dark);
+  --input: var(--bg-dark);
+  --ring: var(--blue);
+  --radius: 0.75rem;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-figtree);
+  --font-heading: var(--font-pixelify);
+
+  --color-poke-green: var(--bg);
+  --color-poke-green-light: var(--bg-light);
+  --color-poke-green-dark: var(--bg-dark);
+  --color-poke-orange: var(--orange);
+  --color-poke-orange-dark: var(--orange-dark);
+  --color-poke-blue: var(--blue);
+  --color-poke-blue-dark: var(--blue-dark);
+  --color-ink: var(--ink);
+
+  /* Échelle typographique : quarte juste (ratio 1.333, base 16px) */
+  --text-xs: 0.75rem;              /* 12px  = 16 / 1.333 */
+  --text-xs--line-height: 1.5;
+  --text-sm: 1rem;                 /* 16px  (texte UI courant) */
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;               /* 16px */
+  --text-base--line-height: 1.5;
+  --text-lg: 1.333rem;             /* 21px */
+  --text-lg--line-height: 1.4;
+  --text-xl: 1.777rem;             /* 28px */
+  --text-xl--line-height: 1.3;
+  --text-2xl: 2.369rem;            /* 38px */
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 3.157rem;            /* 51px */
+  --text-3xl--line-height: 1.1;
+  --text-4xl: 4.209rem;            /* 67px */
+  --text-4xl--line-height: 1;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+/* ---------- Texte blanc à ombre portée façon Pokémon ---------- */
+@utility txt {
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--bg-dark);
+}
+@utility txt-orange {
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--orange-dark);
+}
+@utility txt-blue {
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--blue-dark);
+}
+
+/* ---------- Panneau vert (cards) : dégradé vertical + liseré clair ---------- */
+@utility panel {
+  background-image: linear-gradient(
+    to bottom,
+    var(--bg-light) 0%,
+    var(--bg) 45%,
+    var(--bg-deep) 100%
+  );
+  border: 3px solid var(--bg-dark);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.35),
+    0 6px 0 var(--bg-dark);
+}
+
+/* ---------- Tuile d'info (comme les icônes du menu HGSS) ---------- */
+@utility tile {
+  background-image: linear-gradient(to bottom, var(--bg-light), var(--bg) 60%, var(--bg-deep));
+  border: 2px solid var(--bg-dark);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.3);
+}
+
+/* ---------- Boutons ---------- */
+@utility btn-orange {
+  background-image: linear-gradient(to bottom, var(--orange-light), var(--orange) 50%, var(--orange-deep));
+  border: 2px solid var(--orange-dark);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.45),
+    0 4px 0 var(--orange-dark);
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--orange-dark);
+}
+@utility btn-blue {
+  background-image: linear-gradient(to bottom, var(--blue-light), var(--blue) 50%, var(--blue-deep));
+  border: 2px solid var(--blue-dark);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.45),
+    0 4px 0 var(--blue-dark);
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--blue-dark);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply text-foreground;
+    background-color: var(--bg);
+    /* grille de points discrète + dégradé vertical */
+    background-image:
+      radial-gradient(rgb(255 255 255 / 0.12) 1.5px, transparent 1.5px),
+      linear-gradient(to bottom, var(--bg), var(--bg-deep));
+    background-size: 12px 12px, 100% 100%;
+    background-attachment: fixed;
+  }
+  h1, h2, h3 {
+    @apply font-heading;
+  }
+}
