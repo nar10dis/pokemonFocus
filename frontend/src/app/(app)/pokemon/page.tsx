@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Search, Star } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils"
 const ALL = "all"
 const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unys", "Kalos", "Alola", "Galar"]
 const LEVELS = [1, 2, 5, 10, 25, 50]
+/** multiple de 12 : la dernière ligne reste pleine (2, 3, 4 ou 6 colonnes) */
+const PAGE_SIZE = 48
+/** on charge le paquet suivant quand le bas de la liste est à moins de cette distance */
+const PRELOAD_MARGIN = "800px 0px"
 const SORTS = [
   { value: "number", label: "N° Pokédex" },
   { value: "level", label: "Niveau" },
@@ -139,19 +143,64 @@ export default function MyPokemonPage() {
       {list.length === 0 ? (
         <p className="txt py-12 text-center font-heading text-xl">Aucun Pokémon ne correspond.</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {list.map((p) => (
-            <PokemonCard
-              key={p.id}
-              pokemon={p}
-              owned={owned.get(p.id)}
-              favorite={favorites.includes(p.id)}
-              onToggleFavorite={() => toggleFavorite(p.id)}
-            />
-          ))}
-        </ul>
+        // la clé remet le compteur à zéro dès qu'un filtre ou le tri change
+        <PokemonGrid
+          key={[search, region, type, minLevel, sort, ownedOnly].join("|")}
+          list={list}
+          owned={owned}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+        />
       )}
     </PageShell>
+  )
+}
+
+/** Affiche la liste par paquets : le suivant est préparé avant d'arriver en bas. */
+function PokemonGrid({
+  list,
+  owned,
+  favorites,
+  onToggleFavorite,
+}: {
+  list: Pokemon[]
+  owned: Map<number, OwnedPokemon>
+  favorites: number[]
+  onToggleFavorite: (id: number) => void
+}) {
+  const [visible, setVisible] = useState(PAGE_SIZE)
+  const sentinel = useRef<HTMLDivElement>(null)
+  const hasMore = visible < list.length
+
+  useEffect(() => {
+    const el = sentinel.current
+    if (!el || !hasMore) return
+    // recréé à chaque paquet : si le repère est encore visible, le suivant se charge aussitôt
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) setVisible((v) => v + PAGE_SIZE)
+      },
+      { rootMargin: PRELOAD_MARGIN },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [visible, hasMore])
+
+  return (
+    <>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {list.slice(0, visible).map((p) => (
+          <PokemonCard
+            key={p.id}
+            pokemon={p}
+            owned={owned.get(p.id)}
+            favorite={favorites.includes(p.id)}
+            onToggleFavorite={() => onToggleFavorite(p.id)}
+          />
+        ))}
+      </ul>
+      {hasMore && <div ref={sentinel} aria-hidden className="h-px" />}
+    </>
   )
 }
 

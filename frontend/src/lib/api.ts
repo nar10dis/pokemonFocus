@@ -200,6 +200,9 @@ export const api = {
   session: (id: number) => request<WorkSession>(`/sessions/${id}`),
   startSession: (data: { region: string; plannedMinutes: number; themeId?: number }) =>
     post<WorkSession>("/sessions", data),
+  /** test (dev uniquement) : session d'1 h déjà terminée, avec captures */
+  simulateSession: (data: { region: string; themeId?: number }) =>
+    post<WorkSession>("/sessions/simulate", data),
   pauseSession: (id: number) => post<WorkSession>(`/sessions/${id}/pause`),
   resumeSession: (id: number) => post<WorkSession>(`/sessions/${id}/resume`),
   abandonSession: (id: number) => post<WorkSession>(`/sessions/${id}/abandon`),

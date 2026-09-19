@@ -1,3 +1,4 @@
+import { OmitType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsDate, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { REGIONS } from '../pokemon/pokemon.service.js';
@@ -16,6 +17,9 @@ export class StartSessionDto {
   @IsInt()
   themeId?: number;
 }
+
+/** la durée est imposée par le serveur (1 h) */
+export class SimulateSessionDto extends OmitType(StartSessionDto, ['plannedMinutes'] as const) {}
 
 export class ListSessionsQuery {
   @Type(() => Date)
