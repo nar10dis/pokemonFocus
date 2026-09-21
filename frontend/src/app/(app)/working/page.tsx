@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { WalkingTrainer } from "@/components/walking-trainer"
 import { api, errorMessage, type WorkSession } from "@/lib/api"
+import { ALERT_BUBBLE_MS, CAPTURE_CHANCE_PER_MINUTE } from "@/lib/capture"
 import { keys, useActiveSession } from "@/lib/queries"
 import { formatClock, formatMinutes } from "@/lib/time"
 
@@ -35,7 +36,9 @@ export default function WorkingPage() {
   const active = useActiveSession()
   const session = active.data
   const [now, setNow] = useState(() => Date.now())
+  const [encounter, setEncounter] = useState(false)
   const completing = useRef(false)
+  const lastRolled = useRef<number | null>(null)
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250)
@@ -87,6 +90,22 @@ export default function WorkingPage() {
   const total = session ? session.plannedMinutes * 60_000 : 1
   const remaining = Math.max(0, total - elapsed)
   const clock = formatClock(remaining)
+
+  // un "!" au-dessus du dresseur à chaque minute où un Pokémon se montre
+  const minute = Math.floor(elapsed / 60_000)
+  useEffect(() => {
+    if (!running) return
+    // première minute observée (arrivée sur la page) : rien, on note juste où on en est
+    if (lastRolled.current === null || minute <= lastRolled.current) {
+      lastRolled.current = minute
+      return
+    }
+    lastRolled.current = minute
+    if (Math.random() >= CAPTURE_CHANCE_PER_MINUTE) return
+    setEncounter(true)
+    const id = setTimeout(() => setEncounter(false), ALERT_BUBBLE_MS)
+    return () => clearTimeout(id)
+  }, [minute, running])
 
   useEffect(() => {
     if (session && running && remaining === 0 && !completing.current) {
@@ -147,7 +166,7 @@ export default function WorkingPage() {
           />
         </svg>
         <div className="panel absolute inset-[34px] flex flex-col items-center justify-center gap-3 overflow-hidden rounded-full !shadow-[inset_0_0_0_2px_rgb(255_255_255/0.35)]">
-          <WalkingTrainer paused={paused || done} />
+          <WalkingTrainer paused={paused || done} alert={encounter && !paused && !done} />
           <p
             className="txt font-heading text-4xl tabular-nums [text-shadow:3px_3px_0_var(--bg-dark)]"
             role="timer"

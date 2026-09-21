@@ -11,6 +11,7 @@ type PokemonSeed = {
   region: string;
   legendary: boolean;
   mythical: boolean;
+  rarity?: number;
 };
 
 const prisma = new PrismaClient({
@@ -26,4 +27,20 @@ const { count } = await prisma.pokemon.createMany({
   skipDuplicates: true,
 });
 console.log(`Pokédex: ${count} Pokémon ajoutés (${data.length} au total)`);
+
+// les raretés évoluent : on les remet à jour sur les lignes déjà en base, groupées par valeur
+const byRarity = new Map<number, number[]>();
+for (const p of data) {
+  if (p.rarity === undefined) continue;
+  const ids = byRarity.get(p.rarity) ?? [];
+  ids.push(p.id);
+  byRarity.set(p.rarity, ids);
+}
+await prisma.$transaction(
+  [...byRarity].map(([rarity, ids]) =>
+    prisma.pokemon.updateMany({ where: { id: { in: ids } }, data: { rarity } }),
+  ),
+);
+console.log(`Raretés: ${[...byRarity.values()].flat().length} Pokémon mis à jour`);
+
 await prisma.$disconnect();

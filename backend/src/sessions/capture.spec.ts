@@ -11,6 +11,7 @@ const mon = (id: number, extra: Partial<Pokemon> = {}): Pokemon => ({
   region: 'Kanto',
   legendary: false,
   mythical: false,
+  rarity: 50,
   ...extra,
 });
 
@@ -32,10 +33,20 @@ describe('rollCaptures', () => {
     expect(new Set(picks.map((p) => p.id))).toEqual(new Set([1]));
   });
 
-  it('rend les légendaires rares', () => {
-    const big = [...Array.from({ length: 99 }, (_, i) => mon(i + 1)), mon(100, { legendary: true })];
+  it('rend les Pokémon à forte rareté rares', () => {
+    const big = [...Array.from({ length: 99 }, (_, i) => mon(i + 1)), mon(100, { rarity: 100 })];
     const picks = Array.from({ length: 200 }, () => rollCaptures(big, 60)).flat();
-    const rate = picks.filter((p) => p.legendary).length / picks.length;
+    const rate = picks.filter((p) => p.id === 100).length / picks.length;
+    expect(rate).toBeLessThan(0.005);
+  });
+
+  it('retombe sur la rareté par défaut quand elle manque', () => {
+    const big = [
+      ...Array.from({ length: 99 }, (_, i) => mon(i + 1)),
+      mon(100, { rarity: null, mythical: true }),
+    ];
+    const picks = Array.from({ length: 200 }, () => rollCaptures(big, 60)).flat();
+    const rate = picks.filter((p) => p.mythical).length / picks.length;
     expect(rate).toBeLessThan(0.005);
   });
 });

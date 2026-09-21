@@ -1,7 +1,8 @@
 "use client"
 
-import { useAnimate } from "motion/react"
+import { AnimatePresence, useAnimate } from "motion/react"
 import { useEffect, useRef, useState } from "react"
+import { AlertBubble } from "@/components/alert-bubble"
 import { SpriteAnimation } from "@/components/sprite-animation"
 
 type Dir = "down" | "left" | "right" | "up"
@@ -22,7 +23,16 @@ const frames = (dir: Dir) =>
   [0, 1, 2, 3].map((i) => `/sprites/trainers/ethan/overworld/walk/${dir}-${i}.png`)
 
 /** Ethan qui se balade en boucle ; s'arrête sur place quand `paused`. */
-export function WalkingTrainer({ paused, scale = 2 }: { paused: boolean; scale?: number }) {
+export function WalkingTrainer({
+  paused,
+  alert = false,
+  scale = 2,
+}: {
+  paused: boolean
+  /** affiche la bulle "!" au-dessus de sa tête (un Pokémon se montre) */
+  alert?: boolean
+  scale?: number
+}) {
   const [scope, animate] = useAnimate<HTMLDivElement>()
   const controls = useRef<ReturnType<typeof animate> | null>(null)
   const [leg, setLeg] = useState(0)
@@ -50,7 +60,10 @@ export function WalkingTrainer({ paused, scale = 2 }: { paused: boolean; scale?:
 
   const dir = paused ? "down" : LEGS[leg].dir
   return (
-    <div ref={scope}>
+    <div ref={scope} className="relative">
+      <AnimatePresence>
+        {alert && <AlertBubble className="absolute bottom-full left-1/2 z-10 -mb-3" />}
+      </AnimatePresence>
       {(["down", "left", "right", "up"] as Dir[]).map((d) => (
         <SpriteAnimation
           key={d}

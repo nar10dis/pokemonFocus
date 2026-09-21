@@ -45,6 +45,8 @@ model Pokemon {
   region    String
   legendary Boolean  @default(false)
   mythical  Boolean  @default(false)
+  /// rareté 1-100 : plus c'est haut, plus il est difficile à obtenir (null = pas encore équilibré)
+  rarity    Int?
 
   owners    OwnedPokemon[]
   captures  SessionCapture[]

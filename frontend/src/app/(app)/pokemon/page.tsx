@@ -12,10 +12,10 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { api, errorMessage, type OwnedPokemon, type Pokemon } from "@/lib/api"
 import { keys, useCollection, usePokedex } from "@/lib/queries"
+import { isVisibleRegion, REGIONS } from "@/lib/regions"
 import { cn } from "@/lib/utils"
 
 const ALL = "all"
-const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unys", "Kalos", "Alola", "Galar"]
 const LEVELS = [1, 2, 5, 10, 25, 50]
 /** multiple de 12 : la dernière ligne reste pleine (2, 3, 4 ou 6 colonnes) */
 const PAGE_SIZE = 48
@@ -43,9 +43,14 @@ export default function MyPokemonPage() {
     () => new Map(collection.data?.map((o) => [o.pokemonId, o])),
     [collection.data],
   )
-  const types = useMemo(
-    () => [...new Set(pokedex.data?.flatMap((p) => p.types))].sort((a, b) => a.localeCompare(b, "fr")),
+  /** les régions masquées ne sont pas listées pour l'instant */
+  const dex = useMemo(
+    () => pokedex.data?.filter((p) => isVisibleRegion(p.region)) ?? [],
     [pokedex.data],
+  )
+  const types = useMemo(
+    () => [...new Set(dex.flatMap((p) => p.types))].sort((a, b) => a.localeCompare(b, "fr")),
+    [dex],
   )
 
   const favorites = useMemo(
@@ -73,10 +78,9 @@ export default function MyPokemonPage() {
   }
 
   const list = useMemo(() => {
-    if (!pokedex.data) return []
     const q = search.trim().toLowerCase().replace(/^#/, "")
     const level = Number(minLevel)
-    const filtered = pokedex.data.filter((p) => {
+    const filtered = dex.filter((p) => {
       const o = owned.get(p.id)
       if ((ownedOnly || level > 0) && !o) return false
       if (level > 0 && o!.level < level) return false
@@ -90,14 +94,14 @@ export default function MyPokemonPage() {
     if (sort === "level") filtered.sort((a, b) => lvl(b) - lvl(a) || a.id - b.id)
     if (sort === "name") filtered.sort((a, b) => a.name.localeCompare(b.name, "fr"))
     return filtered
-  }, [pokedex.data, owned, search, region, type, minLevel, sort, ownedOnly])
+  }, [dex, owned, search, region, type, minLevel, sort, ownedOnly])
 
   if (!pokedex.data || !collection.data) return <Loading />
 
   return (
     <PageShell
       title="Mes Pokémon"
-      subtitle={`${collection.data.length} / ${pokedex.data.length} capturés · ${favorites.length}/6 favoris`}
+      subtitle={`${dex.filter((p) => owned.has(p.id)).length} / ${dex.length} capturés · ${favorites.length}/6 favoris`}
     >
       <Card size="sm">
         <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_repeat(4,minmax(9.5rem,1fr))_auto] lg:items-center">

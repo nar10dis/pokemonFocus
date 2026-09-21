@@ -38,10 +38,10 @@ import {
 } from "@/components/ui/dialog"
 import { api, authApi, errorMessage, type TitleWord, type UserStats } from "@/lib/api"
 import { keys, useFriends, usePokedex, useProfile, useTitles } from "@/lib/queries"
+import { isVisibleRegion, REGIONS } from "@/lib/regions"
 import { dateFormat, dateTimeFormat, formatMinutes, timeAgo } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
-const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unys", "Kalos", "Alola", "Galar"]
 const NONE = "none"
 
 export default function ProfilePage() {
@@ -66,6 +66,9 @@ export default function ProfilePage() {
   if (!profile.data || !pokedex.data) return <Loading />
   const p = profile.data
   const s = p.stats
+  /** une région masquée est traitée comme "pas encore choisie" */
+  const favoriteRegion =
+    p.favoriteRegion && isVisibleRegion(p.favoriteRegion) ? p.favoriteRegion : null
 
   const info = [
     { icon: IdCard, label: "ID Dresseur", value: `#${String(p.id).padStart(5, "0")}` },
@@ -81,7 +84,11 @@ export default function ProfilePage() {
     { icon: Hourglass, label: "Temps de focus", value: formatMinutes(s.totalMinutes) },
     { icon: Swords, label: "Sessions", value: String(s.sessions) },
     { icon: Sparkles, label: "Captures", value: String(s.captures) },
-    { icon: Trophy, label: "Espèces", value: `${s.species} / ${pokedex.data.length}` },
+    {
+      icon: Trophy,
+      label: "Espèces",
+      value: `${s.species} / ${pokedex.data.filter((p) => isVisibleRegion(p.region)).length}`,
+    },
     { icon: Crown, label: "Légendaires", value: String(s.legendaries) },
     { icon: Sparkles, label: "Fabuleux", value: String(s.mythicals) },
   ]
@@ -120,10 +127,10 @@ export default function ProfilePage() {
                 <p className="txt mb-1 text-xs font-bold uppercase">Région favorite</p>
                 <SimpleSelect
                   label="Région favorite"
-                  value={p.favoriteRegion ?? NONE}
+                  value={favoriteRegion ?? NONE}
                   onChange={(v) => v !== NONE && update.mutate({ favoriteRegion: v })}
                   options={[
-                    ...(p.favoriteRegion ? [] : [{ value: NONE, label: "Choisir…" }]),
+                    ...(favoriteRegion ? [] : [{ value: NONE, label: "Choisir…" }]),
                     ...REGIONS.map((r) => ({ value: r, label: r })),
                   ]}
                   className="h-9"

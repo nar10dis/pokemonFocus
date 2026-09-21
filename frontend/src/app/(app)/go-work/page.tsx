@@ -22,11 +22,14 @@ import {
   useThemes,
   useWeekSessions,
 } from "@/lib/queries"
+import { isVisibleRegion, REGIONS } from "@/lib/regions"
 import { dailyGoalMinutes, formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
-const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unys", "Kalos", "Alola", "Galar"]
-const PRESETS = [25, 45, 60, 90]
+/** doit rester aligné sur SESSION_MIN_MINUTES / SESSION_MAX_MINUTES côté backend */
+const MIN_MINUTES = 30
+const MAX_MINUTES = 240
+const PRESETS = [30, 45, 60, 90]
 const PREVIEW_SIZE = 14
 
 /** échantillon stable (dépend seulement de la région) */
@@ -48,7 +51,7 @@ export default function GoWorkPage() {
 
   const [region, setRegion] = useState<string | null>(null)
   const [themeId, setThemeId] = useState<number | null>(null)
-  const [minutes, setMinutes] = useState(25)
+  const [minutes, setMinutes] = useState(MIN_MINUTES)
 
   const start = useMutation({
     mutationFn: () =>
@@ -71,7 +74,8 @@ export default function GoWorkPage() {
     onError: (err) => toast.error(errorMessage(err)),
   })
 
-  const currentRegion = region ?? profile.data?.favoriteRegion ?? "Kanto"
+  const favorite = profile.data?.favoriteRegion
+  const currentRegion = region ?? (favorite && isVisibleRegion(favorite) ? favorite : "Kanto")
   const owned = useMemo(() => new Set(collection.data?.map((o) => o.pokemonId)), [collection.data])
   const regionPokemon = useMemo(
     () => pokedex.data?.filter((p) => p.region === currentRegion) ?? [],
@@ -86,7 +90,7 @@ export default function GoWorkPage() {
   const dailyGoal = dailyGoalMinutes(profile.data.weeklyGoalMinutes, profile.data.workDays)
   const left = dailyGoal - todayMinutes
   const regionOwned = regionPokemon.filter((p) => owned.has(p.id)).length
-  const validMinutes = minutes >= 5 && minutes <= 240
+  const validMinutes = minutes >= MIN_MINUTES && minutes <= MAX_MINUTES
 
   return (
     <PageShell title="Go Work !" subtitle="Prépare ta prochaine session de focus.">
@@ -188,7 +192,7 @@ export default function GoWorkPage() {
         <Card>
           <CardHeader>
             <CardTitle>3 · Durée</CardTitle>
-            <CardDescription>Entre 5 min et 4 h.</CardDescription>
+            <CardDescription>Entre 30 min et 4 h.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center gap-2">
             {PRESETS.map((m) => (
@@ -200,8 +204,8 @@ export default function GoWorkPage() {
               ou
               <Input
                 type="number"
-                min={5}
-                max={240}
+                min={MIN_MINUTES}
+                max={MAX_MINUTES}
                 value={minutes}
                 onChange={(e) => setMinutes(Number(e.target.value))}
                 className="h-9 w-20"

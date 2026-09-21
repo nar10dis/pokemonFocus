@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { PokemonService, REGIONS } from './pokemon.service.js';
+import { PokemonService, VISIBLE_REGIONS } from './pokemon.service.js';
 
 @Controller('pokemon')
 export class PokemonController {
@@ -12,6 +12,6 @@ export class PokemonController {
 
   @Get('regions')
   regions() {
-    return REGIONS;
+    return VISIBLE_REGIONS;
   }
 }
