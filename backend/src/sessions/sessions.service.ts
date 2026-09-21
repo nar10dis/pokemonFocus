@@ -15,6 +15,8 @@ import type { ListSessionsQuery, StartSessionDto } from './sessions.dto.js';
 /** marge tolérée entre l'horloge du client et celle du serveur */
 const COMPLETE_TOLERANCE_MS = 5_000;
 
+const SIMULATED_MINUTES = 60;
+
 const withDetails = {
   theme: true,
   captures: { include: { pokemon: true }, orderBy: { id: 'asc' } },
@@ -119,6 +121,20 @@ export class SessionsService {
       data: { status: 'ABANDONED', endedAt: new Date() },
     });
     return this.get(userId, id);
+  }
+
+  /**
+   * Test uniquement : crée une session d'1 h déjà écoulée et la termine (vraies captures).
+   * Désactivé en production.
+   */
+  async simulate(userId: number, dto: Omit<StartSessionDto, 'plannedMinutes'>) {
+    if (process.env.NODE_ENV === 'production') throw new NotFoundException();
+    const s = await this.start(userId, { ...dto, plannedMinutes: SIMULATED_MINUTES });
+    await this.prisma.workSession.update({
+      where: { id: s.id },
+      data: { startedAt: new Date(Date.now() - SIMULATED_MINUTES * 60_000) },
+    });
+    return this.complete(userId, s.id);
   }
 
   async complete(userId: number, id: number) {

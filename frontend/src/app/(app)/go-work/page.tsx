@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Plus } from "lucide-react"
+import { FlaskConical, Plus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -56,6 +56,17 @@ export default function GoWorkPage() {
     onSuccess: (session) => {
       queryClient.setQueryData(keys.activeSession, session)
       router.push("/working")
+    },
+    onError: (err) => toast.error(errorMessage(err)),
+  })
+
+  const simulate = useMutation({
+    mutationFn: () => api.simulateSession({ region: currentRegion, themeId: themeId ?? undefined }),
+    onSuccess: (session) => {
+      queryClient.setQueryData(keys.session(session.id), session)
+      for (const k of [keys.sessions, keys.collection, keys.profile, keys.titles])
+        queryClient.invalidateQueries({ queryKey: k })
+      router.push(`/result/${session.id}`)
     },
     onError: (err) => toast.error(errorMessage(err)),
   })
@@ -210,6 +221,18 @@ export default function GoWorkPage() {
       >
         {start.isPending ? "Lancement…" : "C'est parti !"}
       </Button>
+
+      {process.env.NODE_ENV !== "production" && (
+        <Button
+          variant="outline"
+          className="self-center"
+          disabled={simulate.isPending || !!active.data}
+          onClick={() => simulate.mutate()}
+        >
+          <FlaskConical data-icon="inline-start" />
+          {simulate.isPending ? "Simulation…" : "Test : simuler une session d'1 h"}
+        </Button>
+      )}
     </PageShell>
   )
 }

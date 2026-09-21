@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { UserId } from '../auth/user-id.decorator.js';
-import { ListSessionsQuery, StartSessionDto } from './sessions.dto.js';
+import { ListSessionsQuery, SimulateSessionDto, StartSessionDto } from './sessions.dto.js';
 import { SessionsService } from './sessions.service.js';
 
 @Controller('sessions')
@@ -22,6 +22,13 @@ export class SessionsController {
   @Post()
   start(@UserId() userId: number, @Body() dto: StartSessionDto) {
     return this.sessions.start(userId, dto);
+  }
+
+  /** test : simule une session d'1 h terminée (404 en production) */
+  @Post('simulate')
+  @HttpCode(200)
+  simulate(@UserId() userId: number, @Body() dto: SimulateSessionDto) {
+    return this.sessions.simulate(userId, dto);
   }
 
   /** sessions terminées sur une période (pour les stats) */
