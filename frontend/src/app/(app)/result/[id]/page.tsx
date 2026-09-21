@@ -13,7 +13,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { keys, useProfile, useWeekSessions } from "@/lib/queries"
-import { formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
+import { dailyGoalMinutes, formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
 export default function ResultPage() {
@@ -49,7 +49,7 @@ export default function ResultPage() {
   const todayMinutes = week.data
     .filter((w) => w.endedAt && isSameDay(new Date(w.endedAt), new Date()))
     .reduce((sum, w) => sum + w.plannedMinutes, 0)
-  const dailyGoal = Math.round(profile.data.weeklyGoalMinutes / 7)
+  const dailyGoal = dailyGoalMinutes(profile.data.weeklyGoalMinutes, profile.data.workDays)
   const newCount = s.captures.filter((c) => c.isNew).length
 
   return (

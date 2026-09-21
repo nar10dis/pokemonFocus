@@ -1,4 +1,3 @@
-import { UserRound } from "lucide-react"
 import Link from "next/link"
 
 export function SiteHeader() {
@@ -15,10 +14,9 @@ export function SiteHeader() {
         </Link>
         <Link
           href="/profile"
-          aria-label="Mon profil"
-          className="btn-blue flex size-11 items-center justify-center rounded-full transition-[filter,translate] hover:brightness-105 active:translate-y-[3px]"
+          className="txt-blue rounded-lg border-2 border-poke-blue-dark bg-linear-to-b from-[var(--blue-light)] via-poke-blue to-[var(--blue-deep)] px-4 py-2 text-sm font-bold transition-[filter] hover:brightness-110"
         >
-          <UserRound className="size-6 drop-shadow-[2px_2px_0_var(--blue-dark)]" />
+          Profil
         </Link>
       </div>
     </header>

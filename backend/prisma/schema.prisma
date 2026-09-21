@@ -23,6 +23,8 @@ model User {
   favoriteRegion    String?
   /// objectif hebdo global, en minutes
   weeklyGoalMinutes Int       @default(600)
+  /// jours où l'on compte travailler, en numéros ISO (1 = lundi … 7 = dimanche)
+  workDays          Int[]     @default([1, 2, 3, 4, 5])
 
   pokemon           OwnedPokemon[]
   themes            Theme[]

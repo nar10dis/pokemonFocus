@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Pencil, Plus, Target, Trash2 } from "lucide-react"
+import { CalendarDays, Pencil, Plus, Target, Trash2 } from "lucide-react"
 import { motion } from "motion/react"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
@@ -33,11 +33,13 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { api, errorMessage, type Theme, type ThemeInput } from "@/lib/api"
 import { keys, useProfile, useThemes, useWeekSessions } from "@/lib/queries"
-import { formatMinutes, startOfWeek } from "@/lib/time"
+import { dailyGoalMinutes, DAY_LABELS, formatMinutes, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
 const EMOJIS = ["📚", "💻", "📐", "🧪", "🎨", "🎵", "✍️", "🌍", "🧠", "📊", "🏃", "🎮", "🔬", "📝", "💼", "🧘"]
 const COLORS = ["#F2B56C", "#65B5F6", "#18D384", "#E86A6A", "#B98CF2", "#F2D56C", "#6CE0D8", "#F28CC8"]
+/** libellés courts des jours, dans l'ordre ISO (1 = lundi) */
+const DAY_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
 
 export default function CustomPage() {
   const queryClient = useQueryClient()
@@ -62,7 +64,13 @@ export default function CustomPage() {
 
   return (
     <PageShell title="Custom" subtitle="Tes thèmes de travail et tes objectifs de la semaine.">
-      <WeeklyGoalCard goal={profile.data.weeklyGoalMinutes} done={weekMinutes} />
+      <WeeklyGoalCard
+        goal={profile.data.weeklyGoalMinutes}
+        done={weekMinutes}
+        workDays={profile.data.workDays}
+      />
+
+      <WorkDaysCard workDays={profile.data.workDays} goal={profile.data.weeklyGoalMinutes} />
 
       <Card>
         <CardHeader>
@@ -128,7 +136,7 @@ export default function CustomPage() {
   )
 }
 
-function WeeklyGoalCard({ goal, done }: { goal: number; done: number }) {
+function WeeklyGoalCard({ goal, done, workDays }: { goal: number; done: number; workDays: number[] }) {
   const queryClient = useQueryClient()
   const [hours, setHours] = useState<string | null>(null)
   const value = hours ?? String(goal / 60)
@@ -148,7 +156,9 @@ function WeeklyGoalCard({ goal, done }: { goal: number; done: number }) {
       <CardHeader>
         <CardTitle>Objectif de la semaine</CardTitle>
         <CardDescription>
-          Soit environ {formatMinutes(goal / 7)} par jour. Il sert de repère dans Go Work et sur l&apos;accueil.
+          Réparti sur tes {workDays.length} jours de travail, soit environ{" "}
+          {formatMinutes(dailyGoalMinutes(goal, workDays))} par jour. Ce repère sert dans Go Work et sur
+          l&apos;accueil.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -181,6 +191,74 @@ function WeeklyGoalCard({ goal, done }: { goal: number; done: number }) {
           </p>
           <ProgressBar value={done} max={goal} />
         </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+/** Sélection des jours où l'on compte travailler (par défaut : lundi → vendredi). */
+function WorkDaysCard({ workDays, goal }: { workDays: number[]; goal: number }) {
+  const queryClient = useQueryClient()
+
+  const save = useMutation({
+    mutationFn: (days: number[]) => api.updateProfile({ workDays: days }),
+    onSuccess: (p) => {
+      queryClient.setQueryData(keys.profile, p)
+      toast.success(`${p.workDays.length} jours de travail · ${formatMinutes(
+        dailyGoalMinutes(p.weeklyGoalMinutes, p.workDays),
+      )} par jour`)
+    },
+    onError: (err) => toast.error(errorMessage(err)),
+  })
+
+  const toggle = (day: number) => {
+    const next = workDays.includes(day) ? workDays.filter((d) => d !== day) : [...workDays, day]
+    if (next.length === 0) {
+      toast.error("Garde au moins un jour de travail")
+      return
+    }
+    save.mutate(next.sort((a, b) => a - b))
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Jours de travail</CardTitle>
+        <CardDescription>
+          Les jours non cochés sont des jours de repos : ils restent estompés sur le graphe et ton objectif
+          hebdo se répartit uniquement sur les jours cochés.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <CalendarDays className="size-6 text-white drop-shadow-[2px_2px_0_var(--bg-dark)]" />
+          <div className="flex flex-wrap gap-2">
+            {DAY_SHORT.map((label, i) => {
+              const day = i + 1
+              const on = workDays.includes(day)
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => toggle(day)}
+                  disabled={save.isPending}
+                  aria-pressed={on}
+                  aria-label={DAY_LABELS[i]}
+                  className={cn(
+                    "min-w-14 rounded-lg px-3 py-2 text-sm font-bold transition-[filter,translate] hover:brightness-110 active:translate-y-[2px] disabled:opacity-60",
+                    on ? "btn-orange" : "tile txt opacity-60",
+                  )}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        <p className="txt text-sm font-bold">
+          {workDays.length} jour{workDays.length > 1 ? "s" : ""} par semaine ·{" "}
+          {formatMinutes(dailyGoalMinutes(goal, workDays))} par jour travaillé
+        </p>
       </CardContent>
     </Card>
   )

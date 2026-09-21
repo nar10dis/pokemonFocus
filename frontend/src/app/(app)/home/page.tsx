@@ -10,7 +10,7 @@ import { ProgressBar } from "@/components/progress-bar"
 import { SpriteAnimation } from "@/components/sprite-animation"
 import { WeeklyChart } from "@/components/weekly-chart"
 import { useActiveSession, useFriendRequests, useProfile, useWeekSessions } from "@/lib/queries"
-import { formatClock, formatMinutes, startOfWeek } from "@/lib/time"
+import { dailyGoalMinutes, formatClock, formatMinutes, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
 const ethanWalk = ["down-0", "down-1", "down-2", "down-3"].map(
@@ -25,7 +25,7 @@ export default function HomePage() {
   const requests = useFriendRequests()
 
   if (!profile.data || !week.data) return <Loading />
-  const { username, title, weeklyGoalMinutes } = profile.data
+  const { username, title, weeklyGoalMinutes, workDays } = profile.data
   const weekMinutes = week.data.reduce((sum, s) => sum + s.plannedMinutes, 0)
   const pending = requests.data?.incoming.length ?? 0
 
@@ -62,7 +62,8 @@ export default function HomePage() {
             <WeeklyChart
               weekStart={weekStart}
               sessions={week.data}
-              dailyGoalMinutes={Math.round(weeklyGoalMinutes / 7)}
+              dailyGoalMinutes={dailyGoalMinutes(weeklyGoalMinutes, workDays)}
+              workDays={workDays}
             />
           </CardContent>
         </Card>

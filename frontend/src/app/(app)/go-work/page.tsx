@@ -22,7 +22,7 @@ import {
   useThemes,
   useWeekSessions,
 } from "@/lib/queries"
-import { formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
+import { dailyGoalMinutes, formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
 const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unys", "Kalos", "Alola", "Galar"]
@@ -83,7 +83,7 @@ export default function GoWorkPage() {
   const todayMinutes = week.data
     .filter((s) => s.endedAt && isSameDay(new Date(s.endedAt), new Date()))
     .reduce((sum, s) => sum + s.plannedMinutes, 0)
-  const dailyGoal = Math.round(profile.data.weeklyGoalMinutes / 7)
+  const dailyGoal = dailyGoalMinutes(profile.data.weeklyGoalMinutes, profile.data.workDays)
   const left = dailyGoal - todayMinutes
   const regionOwned = regionPokemon.filter((p) => owned.has(p.id)).length
   const validMinutes = minutes >= 5 && minutes <= 240

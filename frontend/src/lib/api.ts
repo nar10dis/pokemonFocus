@@ -53,6 +53,8 @@ export type Profile = {
   title: string;
   favoriteRegion: string | null;
   weeklyGoalMinutes: number;
+  /** jours travaillés, en numéros ISO (1 = lundi … 7 = dimanche) */
+  workDays: number[];
   stats: UserStats;
   favorites: Favorite[];
 };
@@ -180,7 +182,9 @@ export const api = {
 
   profile: () => request<Profile>("/me/profile"),
   updateProfile: (
-    data: Partial<Pick<Profile, "titleNoun" | "titleAdjective" | "favoriteRegion" | "weeklyGoalMinutes">>,
+    data: Partial<
+      Pick<Profile, "titleNoun" | "titleAdjective" | "favoriteRegion" | "weeklyGoalMinutes" | "workDays">
+    >,
   ) => patch<Profile>("/me", data),
   titles: () => request<TitleWord[]>("/me/titles"),
   collection: () => request<OwnedPokemon[]>("/me/pokemon"),

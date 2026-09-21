@@ -37,6 +37,7 @@ export class ProfileService {
       title: titleLabel(user.titleNoun, user.titleAdjective),
       favoriteRegion: user.favoriteRegion,
       weeklyGoalMinutes: user.weeklyGoalMinutes,
+      workDays: [...user.workDays].sort((a, b) => a - b),
       stats,
       favorites,
     };
@@ -61,7 +62,10 @@ export class ProfileService {
           throw new BadRequestException(`« ${word.label} » n'est pas encore débloqué`);
       }
     }
-    await this.prisma.user.update({ where: { id: userId }, data: dto });
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { ...dto, ...(dto.workDays && { workDays: [...dto.workDays].sort((a, b) => a - b) }) },
+    });
     return this.profile(userId);
   }
 

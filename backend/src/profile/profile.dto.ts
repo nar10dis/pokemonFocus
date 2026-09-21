@@ -1,5 +1,6 @@
 import {
   ArrayMaxSize,
+  ArrayMinSize,
   ArrayUnique,
   IsArray,
   IsIn,
@@ -29,6 +30,17 @@ export class UpdateProfileDto {
   @Min(30, { message: 'Objectif minimum : 30 min par semaine' })
   @Max(100 * 60, { message: 'Objectif maximum : 100 h par semaine' })
   weeklyGoalMinutes?: number;
+
+  /// numéros ISO des jours travaillés (1 = lundi … 7 = dimanche)
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Choisis au moins un jour de travail' })
+  @ArrayMaxSize(7)
+  @ArrayUnique()
+  @IsInt({ each: true })
+  @Min(1, { each: true, message: 'Jour invalide' })
+  @Max(7, { each: true, message: 'Jour invalide' })
+  workDays?: number[];
 }
 
 export class SetFavoritesDto {

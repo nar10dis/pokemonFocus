@@ -12,6 +12,22 @@ export function addDays(d: Date, n: number) {
   return r;
 }
 
+/** numéro ISO du jour : 1 = lundi … 7 = dimanche */
+export function isoDay(d: Date) {
+  return ((d.getDay() + 6) % 7) + 1;
+}
+
+/** jours travaillés par défaut : la semaine, sans le week-end */
+export const DEFAULT_WORK_DAYS = [1, 2, 3, 4, 5];
+
+/** libellés des 7 jours, dans l'ordre ISO */
+export const DAY_LABELS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+
+/** objectif hebdo réparti sur les seuls jours travaillés */
+export function dailyGoalMinutes(weeklyGoalMinutes: number, workDays: number[]) {
+  return Math.round(weeklyGoalMinutes / Math.max(1, workDays.length));
+}
+
 export function isSameDay(a: Date, b: Date) {
   return (
     a.getFullYear() === b.getFullYear() &&
