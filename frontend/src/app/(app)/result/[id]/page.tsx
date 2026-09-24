@@ -94,7 +94,7 @@ export default function ResultPage() {
                 <span
                   className={cn(
                     "absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
-                    c.isNew ? "btn-orange" : "btn-blue",
+                    c.isNew ? "btn-yellow" : "btn-blue",
                   )}
                 >
                   {c.isNew ? (

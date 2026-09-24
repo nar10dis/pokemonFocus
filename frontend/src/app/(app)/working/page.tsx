@@ -195,7 +195,7 @@ export default function WorkingPage() {
           </Button>
         )}
         <AlertDialog>
-          <AlertDialogTrigger render={<Button size="lg" variant="outline" disabled={done} />}>
+          <AlertDialogTrigger render={<Button size="lg" variant="red" disabled={done} />}>
             <Flag data-icon="inline-start" /> Abandonner
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -209,6 +209,7 @@ export default function WorkingPage() {
             <AlertDialogFooter>
               <AlertDialogCancel variant="secondary">Continuer</AlertDialogCancel>
               <AlertDialogAction
+                variant="red"
                 onClick={() => abandon.mutate(session.id)}
                 disabled={abandon.isPending}
               >

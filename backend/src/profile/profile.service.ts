@@ -20,11 +20,16 @@ export class ProfileService {
   }
 
   async profile(userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { avatarPokemon: true },
+    });
     if (!user) throw new NotFoundException();
-    const [stats, favorites] = await Promise.all([
+    const [stats, favorites, streakDays, weeklyMinutes] = await Promise.all([
       this.stats.forUser(userId),
       this.favorites(userId),
+      this.stats.streak(userId, user.workDays),
+      this.stats.weeklyMinutes(userId),
     ]);
     return {
       id: user.id,
@@ -38,6 +43,12 @@ export class ProfileService {
       favoriteRegion: user.favoriteRegion,
       weeklyGoalMinutes: user.weeklyGoalMinutes,
       workDays: [...user.workDays].sort((a, b) => a - b),
+      /// jours de travail d'affilée : les jours de repos (hors workDays) ne comptent pas
+      streakDays,
+      weeklyGoalMet: weeklyMinutes >= user.weeklyGoalMinutes,
+      avatarPokemon: user.avatarPokemon,
+      avatarColor: user.avatarColor,
+      avatarCosmetics: user.avatarCosmetics,
       stats,
       favorites,
     };
@@ -62,9 +73,22 @@ export class ProfileService {
           throw new BadRequestException(`« ${word.label} » n'est pas encore débloqué`);
       }
     }
+    if (dto.avatarPokemonId != null) {
+      const owned = await this.prisma.ownedPokemon.count({
+        where: { userId, pokemonId: dto.avatarPokemonId },
+      });
+      if (!owned) throw new BadRequestException('Tu ne peux choisir qu\'un Pokémon capturé');
+    }
+    const { workDays, avatarCosmetics, ...rest } = dto;
     await this.prisma.user.update({
       where: { id: userId },
-      data: { ...dto, ...(dto.workDays && { workDays: [...dto.workDays].sort((a, b) => a - b) }) },
+      data: {
+        ...rest,
+        ...(workDays && { workDays: [...workDays].sort((a, b) => a - b) }),
+        ...(avatarCosmetics && {
+          avatarCosmetics: avatarCosmetics.map(({ id, x, y, back }) => ({ id, x, y, back })),
+        }),
+      },
     });
     return this.profile(userId);
   }

@@ -59,7 +59,7 @@ export function PageShell({
 export function Loading({ label = "Chargement…" }: { label?: string }) {
   return (
     <div className="flex flex-1 items-center justify-center py-20">
-      <p className="txt font-heading text-xl animate-pulse">{label}</p>
+      <p className="txt animate-pulse font-heading text-xl">{label}</p>
     </div>
   )
 }

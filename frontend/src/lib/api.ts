@@ -33,6 +33,9 @@ export type OwnedPokemon = {
 
 export type Favorite = { favoriteSlot?: number | null; level: number; pokemon: Pokemon };
 
+/** accessoire posé sur l'avatar : x/y = centre, en % de l'avatar */
+export type AvatarCosmetic = { id: string; x: number; y: number; back: boolean };
+
 export type UserStats = {
   totalMinutes: number;
   sessions: number;
@@ -55,6 +58,13 @@ export type Profile = {
   weeklyGoalMinutes: number;
   /** jours travaillés, en numéros ISO (1 = lundi … 7 = dimanche) */
   workDays: number[];
+  /** jours de travail d'affilée ; les jours de repos (hors workDays) ne comptent pas */
+  streakDays: number;
+  /** objectif hebdo déjà atteint cette semaine */
+  weeklyGoalMet: boolean;
+  avatarPokemon: Pokemon | null;
+  avatarColor: string | null;
+  avatarCosmetics: AvatarCosmetic[];
   stats: UserStats;
   favorites: Favorite[];
 };
@@ -116,6 +126,9 @@ export type PublicUser = {
   username: string;
   lastLoginAt: string | null;
   title: string;
+  avatarPokemon: Pokemon | null;
+  avatarColor: string | null;
+  avatarCosmetics: AvatarCosmetic[];
 };
 
 export type Friend = PublicUser & {
@@ -184,7 +197,7 @@ export const api = {
   updateProfile: (
     data: Partial<
       Pick<Profile, "titleNoun" | "titleAdjective" | "favoriteRegion" | "weeklyGoalMinutes" | "workDays">
-    >,
+    > & { avatarPokemonId?: number | null; avatarColor?: string; avatarCosmetics?: AvatarCosmetic[] },
   ) => patch<Profile>("/me", data),
   titles: () => request<TitleWord[]>("/me/titles"),
   collection: () => request<OwnedPokemon[]>("/me/pokemon"),

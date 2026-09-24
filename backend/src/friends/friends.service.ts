@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import type { Pokemon, Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { titleLabel } from '../titles/titles.js';
 
@@ -14,6 +15,9 @@ const publicUser = {
   lastLoginAt: true,
   titleNoun: true,
   titleAdjective: true,
+  avatarColor: true,
+  avatarCosmetics: true,
+  avatarPokemon: true,
 } as const;
 
 type PublicUserRow = {
@@ -22,6 +26,9 @@ type PublicUserRow = {
   lastLoginAt: Date | null;
   titleNoun: string | null;
   titleAdjective: string | null;
+  avatarColor: string | null;
+  avatarCosmetics: Prisma.JsonValue;
+  avatarPokemon: Pokemon | null;
 };
 
 const toPublic = ({ titleNoun, titleAdjective, ...u }: PublicUserRow) => ({

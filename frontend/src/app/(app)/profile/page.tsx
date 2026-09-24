@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Clock,
   Crown,
+  Flame,
   Hourglass,
   IdCard,
   Lock,
@@ -25,6 +26,8 @@ import { toast } from "sonner"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
 import { SimpleSelect } from "@/components/simple-select"
+import { AvatarDialog } from "@/components/avatar-dialog"
+import { TrainerAvatar } from "@/components/trainer-avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -81,6 +84,11 @@ export default function ProfilePage() {
     },
   ]
   const stats = [
+    {
+      icon: Flame,
+      label: "Série (jours travaillés)",
+      value: p.streakDays > 1 ? `${p.streakDays} jours` : `${p.streakDays} jour`,
+    },
     { icon: Hourglass, label: "Temps de focus", value: formatMinutes(s.totalMinutes) },
     { icon: Swords, label: "Sessions", value: String(s.sessions) },
     { icon: Sparkles, label: "Captures", value: String(s.captures) },
@@ -97,7 +105,7 @@ export default function ProfilePage() {
     <PageShell
       title="Carte Dresseur"
       actions={
-        <Button onClick={logout} variant="secondary">
+        <Button onClick={logout} variant="red">
           <LogOut data-icon="inline-start" /> Déconnexion
         </Button>
       }
@@ -105,9 +113,7 @@ export default function ProfilePage() {
       <Card>
         <CardContent className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="btn-blue flex size-20 shrink-0 items-center justify-center rounded-xl font-heading text-2xl">
-              {p.username[0]?.toUpperCase()}
-            </div>
+            <AvatarDialog profile={p} />
             <div className="min-w-0 flex-1">
               <h2 className="txt truncate text-2xl [text-shadow:3px_3px_0_var(--bg-dark)]">{p.username}</h2>
               <div className="flex items-center gap-2">
@@ -200,9 +206,7 @@ export default function ProfilePage() {
               <ul className="flex flex-col gap-2">
                 {friends.data.slice(0, 6).map((f) => (
                   <li key={f.id} className="tile flex items-center gap-3 rounded-lg px-3 py-2">
-                    <span className="btn-blue flex size-9 shrink-0 items-center justify-center rounded-lg font-heading">
-                      {f.username[0]?.toUpperCase()}
-                    </span>
+                    <TrainerAvatar user={f} />
                     <div className="min-w-0 flex-1">
                       <p className="txt truncate font-bold">{f.username}</p>
                       <p className="txt truncate text-xs font-semibold opacity-90">
@@ -359,7 +363,7 @@ function WordPicker({
             title={w.requires && !w.unlocked ? `Débloqué avec ${requirementLabel(w.requires)}` : undefined}
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold transition-[filter]",
-              selected === w.id ? "btn-orange" : "tile txt",
+              selected === w.id ? "btn-yellow" : "tile txt",
               w.unlocked ? "hover:brightness-105" : "cursor-not-allowed opacity-60",
             )}
           >

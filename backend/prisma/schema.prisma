@@ -25,6 +25,14 @@ model User {
   weeklyGoalMinutes Int       @default(600)
   /// jours où l'on compte travailler, en numéros ISO (1 = lundi … 7 = dimanche)
   workDays          Int[]     @default([1, 2, 3, 4, 5])
+  /// photo de profil : un Pokémon capturé sur un fond coloré (null = initiale du pseudo)
+  avatarPokemonId   Int?
+  /// couleur de fond de l'avatar (hex)
+  avatarColor       String?
+  /// accessoires posés sur l'avatar : [{ id, x, y, back }] (x/y = centre en % de l'avatar)
+  avatarCosmetics   Json      @default("[]")
+
+  avatarPokemon     Pokemon?  @relation(fields: [avatarPokemonId], references: [id])
 
   pokemon           OwnedPokemon[]
   themes            Theme[]
@@ -50,6 +58,7 @@ model Pokemon {
 
   owners    OwnedPokemon[]
   captures  SessionCapture[]
+  avatarOf  User[]
 
   @@index([region])
 }

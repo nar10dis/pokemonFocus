@@ -10,22 +10,39 @@ function rarity(p: Pokemon) {
   return normal;
 }
 
-/** plus un Pokémon est rare, moins il pèse dans le tirage */
-function weight(p: Pokemon) {
-  return CAPTURE_CONFIG.rarityScale - rarity(p);
+/**
+ * Plus un Pokémon est rare, moins il pèse dans le tirage. `maxRarityCap` plafonne la
+ * rareté *effective* utilisée ici (pas la valeur affichée) : plus il est bas, plus les
+ * Pokémon rares se rapprochent des communs dans le tirage.
+ */
+function weight(p: Pokemon, maxRarityCap: number) {
+  return CAPTURE_CONFIG.rarityScale - Math.min(rarity(p), maxRarityCap);
+}
+
+/** Plafond de rareté effective selon la série de jours travaillés d'affilée. */
+export function rarityCapFor(streakDays: number): number {
+  let cap: number = CAPTURE_CONFIG.rarityCapByStreak[0].cap;
+  for (const tier of CAPTURE_CONFIG.rarityCapByStreak)
+    if (streakDays >= tier.minStreak) cap = tier.cap;
+  return Math.max(cap, CAPTURE_CONFIG.minRarityCap);
 }
 
 /** Tire les Pokémon capturés pour une session de `minutes` dans `pool` (doublons possibles). */
-export function rollCaptures(pool: Pokemon[], minutes: number, random = Math.random): Pokemon[] {
+export function rollCaptures(
+  pool: Pokemon[],
+  minutes: number,
+  random = Math.random,
+  maxRarityCap: number = CAPTURE_CONFIG.rarityCapByStreak[0].cap,
+): Pokemon[] {
   let count = 0;
   for (let i = 0; i < minutes; i++) if (random() < CAPTURE_CONFIG.chancePerMinute) count++;
   count = Math.max(count, CAPTURE_CONFIG.minCaptures);
 
-  const total = pool.reduce((sum, p) => sum + weight(p), 0);
+  const total = pool.reduce((sum, p) => sum + weight(p, maxRarityCap), 0);
   return Array.from({ length: count }, () => {
     let r = random() * total;
     for (const p of pool) {
-      r -= weight(p);
+      r -= weight(p, maxRarityCap);
       if (r <= 0) return p;
     }
     return pool[pool.length - 1];

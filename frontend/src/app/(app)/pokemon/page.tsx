@@ -238,7 +238,7 @@ function PokemonCard({
           <Star
             className={cn(
               "size-5 drop-shadow-[1px_1px_0_var(--bg-dark)]",
-              favorite ? "fill-poke-orange text-poke-orange-dark" : "text-white",
+              favorite ? "fill-poke-yellow text-poke-yellow-dark" : "text-white",
             )}
           />
         </button>

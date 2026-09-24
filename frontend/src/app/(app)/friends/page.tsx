@@ -7,6 +7,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
+import { TrainerAvatar } from "@/components/trainer-avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -92,14 +93,14 @@ export default function FriendsPage() {
                 <Button size="sm" onClick={() => accept.mutate(r.id)} disabled={accept.isPending}>
                   <Check data-icon="inline-start" /> Accepter
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => decline.mutate(r.id)} aria-label="Refuser">
+                <Button size="sm" variant="red" onClick={() => decline.mutate(r.id)} aria-label="Refuser">
                   <X />
                 </Button>
               </RequestRow>
             ))}
             {outgoing.map((r) => (
               <RequestRow key={r.id} request={r} label="demande envoyée">
-                <Button size="sm" variant="outline" onClick={() => decline.mutate(r.id)}>
+                <Button size="sm" variant="red" onClick={() => decline.mutate(r.id)}>
                   Annuler
                 </Button>
               </RequestRow>
@@ -134,9 +135,7 @@ function RequestRow({
 }) {
   return (
     <div className="tile flex flex-wrap items-center gap-3 rounded-lg px-3 py-2">
-      <span className="btn-blue flex size-9 shrink-0 items-center justify-center rounded-lg font-heading">
-        {request.user.username[0]?.toUpperCase()}
-      </span>
+      <TrainerAvatar user={request.user} />
       <p className="txt min-w-0 flex-1 font-semibold">
         <b>{request.user.username}</b> {label}
       </p>
@@ -151,14 +150,12 @@ function FriendCard({ friend: f, index, onRemove }: { friend: Friend; index: num
       <Card size="sm" className="h-full">
         <CardContent className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <span className="btn-blue flex size-12 shrink-0 items-center justify-center rounded-xl font-heading text-xl">
-              {f.username[0]?.toUpperCase()}
-            </span>
+            <TrainerAvatar user={f} size="md" />
             <div className="min-w-0 flex-1">
               <p className="txt truncate font-heading text-lg">{f.username}</p>
               <p className="txt truncate text-sm font-semibold">{f.title}</p>
             </div>
-            <Button size="icon-sm" variant="outline" onClick={onRemove} aria-label={`Retirer ${f.username}`}>
+            <Button size="icon-sm" variant="red" onClick={onRemove} aria-label={`Retirer ${f.username}`}>
               <UserMinus />
             </Button>
           </div>

@@ -1,16 +1,44 @@
+import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsIn,
+  IsHexColor,
   IsInt,
   IsOptional,
   IsString,
+  Matches,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { REGIONS } from '../pokemon/pokemon.service.js';
+
+export const MAX_AVATAR_COSMETICS = 10;
+
+export class AvatarCosmeticDto {
+  /// nom du sprite dans frontend/public/sprites/cosmetics (sans .png)
+  @IsString()
+  @Matches(/^[a-z0-9-]{1,40}$/, { message: 'Accessoire inconnu' })
+  id: string;
+
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  x: number;
+
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  y: number;
+
+  /// derrière le Pokémon plutôt que devant
+  @IsBoolean()
+  back: boolean;
+}
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -41,6 +69,24 @@ export class UpdateProfileDto {
   @Min(1, { each: true, message: 'Jour invalide' })
   @Max(7, { each: true, message: 'Jour invalide' })
   workDays?: number[];
+
+  /// Pokémon affiché en photo de profil (doit être capturé), null pour revenir à l'initiale
+  @IsOptional()
+  @IsInt()
+  avatarPokemonId?: number | null;
+
+  @IsOptional()
+  @IsHexColor({ message: 'Couleur invalide' })
+  avatarColor?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_AVATAR_COSMETICS, {
+    message: `${MAX_AVATAR_COSMETICS} accessoires maximum`,
+  })
+  @ValidateNested({ each: true })
+  @Type(() => AvatarCosmeticDto)
+  avatarCosmetics?: AvatarCosmeticDto[];
 }
 
 export class SetFavoritesDto {

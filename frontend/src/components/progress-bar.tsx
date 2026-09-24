@@ -19,7 +19,7 @@ export function ProgressBar({ value, max, className }: { value: number; max: num
           "h-full rounded-full bg-linear-to-b transition-[width] duration-700",
           pct >= 100
             ? "from-[var(--blue-light)] to-[var(--blue-deep)]"
-            : "from-[var(--orange-light)] to-[var(--orange-deep)]",
+            : "from-[var(--yellow-light)] to-[var(--yellow-deep)]",
         )}
         style={{ width: `${pct}%` }}
       />

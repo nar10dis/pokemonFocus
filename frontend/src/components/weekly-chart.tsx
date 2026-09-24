@@ -100,7 +100,7 @@ export function WeeklyChart({
                         className={cn(
                           "absolute inset-x-0 bottom-0 rounded-t-md border-2 border-b-0 transition-[filter]",
                           d.isWorkDay
-                            ? "border-poke-orange-dark bg-linear-to-b from-[var(--orange-light)] via-poke-orange to-[var(--orange-deep)]"
+                            ? "border-poke-yellow-dark bg-linear-to-b from-[var(--yellow-light)] via-poke-yellow to-[var(--yellow-deep)]"
                             : "border-poke-blue-dark bg-linear-to-b from-[var(--blue-light)] via-poke-blue to-[var(--blue-deep)]",
                           hover === i && "brightness-110",
                         )}

@@ -4,6 +4,9 @@ WORKDIR /app
 # --- dev : le code est monté en volume, deps installées au démarrage
 FROM base AS dev
 ENV NODE_ENV=development
+# socat : relaie Prisma Studio (forcé sur 127.0.0.1) vers 0.0.0.0 pour qu'il soit
+# joignable depuis l'hôte via le port mappé dans docker-compose.yml
+RUN apk add --no-cache socat
 EXPOSE 4000
 CMD ["sh", "-c", "npm install && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run start:dev"]
 

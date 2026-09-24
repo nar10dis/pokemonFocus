@@ -4,11 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { FlaskConical, Plus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { motion, useReducedMotion } from "motion/react"
+import { useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
 import { ProgressBar } from "@/components/progress-bar"
+import { CoverFrom } from "@/components/start-transition"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -52,13 +54,18 @@ export default function GoWorkPage() {
   const [region, setRegion] = useState<string | null>(null)
   const [themeId, setThemeId] = useState<number | null>(null)
   const [minutes, setMinutes] = useState(MIN_MINUTES)
+  const reduced = useReducedMotion()
+  const startButton = useRef<HTMLButtonElement>(null)
+  /** position du bouton quand la transition vers la session démarre */
+  const [cover, setCover] = useState<DOMRect | null>(null)
 
   const start = useMutation({
     mutationFn: () =>
       api.startSession({ region: currentRegion, plannedMinutes: minutes, themeId: themeId ?? undefined }),
     onSuccess: (session) => {
       queryClient.setQueryData(keys.activeSession, session)
-      router.push("/working")
+      if (reduced || !startButton.current) router.push("/working")
+      else setCover(startButton.current.getBoundingClientRect())
     },
     onError: (err) => toast.error(errorMessage(err)),
   })
@@ -141,7 +148,7 @@ export default function GoWorkPage() {
                   aria-pressed={r === currentRegion}
                   className={cn(
                     "flex flex-col items-start rounded-xl px-4 py-3 text-left transition-[filter,translate] hover:brightness-105 active:translate-y-[2px]",
-                    r === currentRegion ? "btn-orange" : "tile txt",
+                    r === currentRegion ? "btn-yellow" : "tile txt",
                   )}
                 >
                   <span className="font-heading text-lg">{r}</span>
@@ -217,14 +224,19 @@ export default function GoWorkPage() {
         </Card>
       </div>
 
-      <Button
-        size="lg"
-        className="h-16 self-center px-12 font-heading text-2xl"
-        disabled={!validMinutes || start.isPending || !!active.data}
-        onClick={() => start.mutate()}
-      >
-        {start.isPending ? "Lancement…" : "C'est parti !"}
-      </Button>
+      <motion.div className="self-center" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
+        <Button
+          ref={startButton}
+          variant="red"
+          size="lg"
+          className="h-16 px-12 font-heading text-2xl"
+          disabled={!validMinutes || start.isPending || !!active.data || !!cover}
+          onClick={() => start.mutate()}
+        >
+          {start.isPending || cover ? "Lancement…" : "C'est parti !"}
+        </Button>
+      </motion.div>
+      {cover && <CoverFrom from={cover} onCovered={() => router.push("/working")} />}
 
       {process.env.NODE_ENV !== "production" && (
         <Button
@@ -260,7 +272,7 @@ function Chip({
       style={color && !selected ? { borderColor: color } : undefined}
       className={cn(
         "rounded-full px-4 py-1.5 text-sm font-bold transition-[filter,translate] hover:brightness-105 active:translate-y-px",
-        selected ? "btn-orange" : "tile txt",
+        selected ? "btn-yellow" : "tile txt",
       )}
     >
       {children}

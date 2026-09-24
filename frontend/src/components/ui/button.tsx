@@ -7,10 +7,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "btn-orange hover:brightness-105",
+        default: "btn-yellow hover:brightness-105",
         outline:
           "tile txt hover:brightness-105",
         secondary: "btn-blue hover:brightness-105",
+        yellow: "btn-yellow hover:brightness-105",
+        red: "btn-red hover:brightness-105",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:

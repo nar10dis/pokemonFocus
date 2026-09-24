@@ -16,6 +16,26 @@ export const CAPTURE_CONFIG = {
   /** rareté utilisée quand elle n'est pas encore renseignée (Alola, Galar) */
   defaultRarity: { normal: 50, legendary: 99, mythical: 100 },
   maxLevel: 100,
+  /**
+   * Plus la série de jours travaillés d'affilée est longue, plus la rareté est
+   * plafonnée bas pour le tirage (donc plus les rares/légendaires ont de chances de
+   * sortir) — les valeurs de `rarity` en base ne changent pas, seul le tirage en tient
+   * compte le temps de la série. Paliers croissants, triés par `minStreak`.
+   *
+   * Volontairement PAS indexé sur l'objectif hebdo : `weeklyGoalMinutes` a un minimum
+   * de 30 (cf. profile.dto.ts), donc un objectif ridiculement bas serait atteint à
+   * chaque session et rendrait tout bonus basé dessus gratuit. L'objectif hebdo reste
+   * un repère d'assiduité sur le profil, pas un levier de tirage.
+   */
+  rarityCapByStreak: [
+    { minStreak: 0, cap: 100 },
+    { minStreak: 3, cap: 88 },
+    { minStreak: 7, cap: 80 },
+    { minStreak: 14, cap: 70 },
+    { minStreak: 30, cap: 58 },
+  ],
+  /** le plafond ne descend jamais sous cette valeur */
+  minRarityCap: 55,
 } as const;
 
 /** durées autorisées pour une session, en minutes */

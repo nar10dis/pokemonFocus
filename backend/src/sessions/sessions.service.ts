@@ -7,9 +7,10 @@ import {
 import type { WorkSession } from '../generated/prisma/client.js';
 import { PokemonService } from '../pokemon/pokemon.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { StatsService } from '../stats/stats.service.js';
 import { ThemesService } from '../themes/themes.service.js';
 import { CAPTURE_CONFIG } from './capture.config.js';
-import { rollCaptures } from './capture.js';
+import { rarityCapFor, rollCaptures } from './capture.js';
 import type { ListSessionsQuery, StartSessionDto } from './sessions.dto.js';
 
 /** marge tolérée entre l'horloge du client et celle du serveur */
@@ -28,6 +29,7 @@ export class SessionsService {
     private readonly prisma: PrismaService,
     private readonly pokemon: PokemonService,
     private readonly themes: ThemesService,
+    private readonly stats: StatsService,
   ) {}
 
   /** temps de travail effectif écoulé, pauses exclues */
@@ -143,7 +145,19 @@ export class SessionsService {
     if (SessionsService.elapsedMs(s) < s.plannedMinutes * 60_000 - COMPLETE_TOLERANCE_MS)
       throw new BadRequestException("La session n'est pas encore terminée");
 
-    const picks = rollCaptures(await this.pokemon.byRegion(s.region), s.plannedMinutes);
+    // plus la série de jours travaillés d'affilée est longue, plus les rares/légendaires
+    // sortent (l'objectif hebdo n'entre plus en jeu ici : un objectif minimum trivial
+    // serait toujours atteint et rendrait le bonus gratuit — cf. capture.config.ts)
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const streakDays = await this.stats.streak(userId, user.workDays);
+    const maxRarityCap = rarityCapFor(streakDays);
+
+    const picks = rollCaptures(
+      await this.pokemon.byRegion(s.region),
+      s.plannedMinutes,
+      Math.random,
+      maxRarityCap,
+    );
 
     await this.prisma.$transaction(async (tx) => {
       // on repasse le statut en premier : un double appel concurrent échoue ici

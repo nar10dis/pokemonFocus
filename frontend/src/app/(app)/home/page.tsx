@@ -69,7 +69,7 @@ export default function HomePage() {
         </Card>
 
         <div className="flex flex-col gap-4">
-          <BigLink href="/go-work" variant="orange" delay={0.1}>
+          <BigLink href="/go-work" variant="yellow" delay={0.1}>
             <SpriteAnimation frames={ethanWalk} width={32} height={40} scale={2} fps={5} alt="" />
             <span>
               Go Work !
@@ -100,7 +100,7 @@ function BigLink({
   children,
 }: {
   href: string
-  variant: "orange" | "blue"
+  variant: "yellow" | "blue"
   delay: number
   children: React.ReactNode
 }) {
@@ -109,7 +109,7 @@ function BigLink({
       <Link
         href={href}
         className={cn(
-          variant === "orange" ? "btn-orange" : "btn-blue",
+          variant === "yellow" ? "btn-yellow" : "btn-blue",
           "flex min-h-28 items-center gap-5 rounded-2xl px-6 py-4 font-heading text-2xl transition-[filter,translate] hover:brightness-105 active:translate-y-[3px]",
         )}
       >
@@ -141,7 +141,7 @@ function SmallLink({
         <Icon className="size-7 drop-shadow-[2px_2px_0_var(--bg-dark)]" />
         {label}
         {badge > 0 && (
-          <span className="btn-orange absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full text-sm">
+          <span className="btn-yellow absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full text-sm">
             {badge}
           </span>
         )}

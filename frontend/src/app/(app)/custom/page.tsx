@@ -105,7 +105,7 @@ export default function CustomPage() {
                     <ThemeDialog theme={t} />
                     <AlertDialog>
                       <AlertDialogTrigger
-                        render={<Button size="icon-sm" variant="outline" aria-label={`Supprimer ${t.name}`} />}
+                        render={<Button size="icon-sm" variant="red" aria-label={`Supprimer ${t.name}`} />}
                       >
                         <Trash2 />
                       </AlertDialogTrigger>
@@ -119,7 +119,7 @@ export default function CustomPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel variant="secondary">Annuler</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => remove.mutate(t.id)}>Supprimer</AlertDialogAction>
+                          <AlertDialogAction variant="red" onClick={() => remove.mutate(t.id)}>Supprimer</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -246,7 +246,7 @@ function WorkDaysCard({ workDays, goal }: { workDays: number[]; goal: number }) 
                   aria-label={DAY_LABELS[i]}
                   className={cn(
                     "min-w-14 rounded-lg px-3 py-2 text-sm font-bold transition-[filter,translate] hover:brightness-110 active:translate-y-[2px] disabled:opacity-60",
-                    on ? "btn-orange" : "tile txt opacity-60",
+                    on ? "btn-yellow" : "tile txt opacity-60",
                   )}
                 >
                   {label}
@@ -343,7 +343,7 @@ function ThemeDialog({ theme }: { theme?: Theme }) {
                     aria-pressed={form.emoji === e}
                     className={cn(
                       "flex size-10 items-center justify-center rounded-lg text-xl",
-                      form.emoji === e ? "btn-orange" : "tile",
+                      form.emoji === e ? "btn-yellow" : "tile",
                     )}
                   >
                     {e}

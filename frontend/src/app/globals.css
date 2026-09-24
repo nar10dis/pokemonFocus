@@ -6,8 +6,10 @@
 :root {
   --bg: #18D384;
   --bg-dark: #0E8A55;     /* bordures, ombre du texte */
-  --orange: #F2B56C;
-  --orange-dark: #B8742A;
+  --red: #EE5B52;
+  --red-dark: #A8322B;
+  --yellow: #F2B56C;
+  --yellow-dark: #B8742A;
   --blue: #65B5F6;
   --blue-dark: #2A78B8;
   --text: #FFFFFF;
@@ -15,8 +17,10 @@
   /* teintes dérivées pour les dégradés verticaux */
   --bg-light: color-mix(in srgb, var(--bg) 70%, white);
   --bg-deep: color-mix(in srgb, var(--bg) 80%, var(--bg-dark));
-  --orange-light: color-mix(in srgb, var(--orange) 65%, white);
-  --orange-deep: color-mix(in srgb, var(--orange) 75%, var(--orange-dark));
+  --red-light: color-mix(in srgb, var(--red) 65%, white);
+  --red-deep: color-mix(in srgb, var(--red) 75%, var(--red-dark));
+  --yellow-light: color-mix(in srgb, var(--yellow) 65%, white);
+  --yellow-deep: color-mix(in srgb, var(--yellow) 75%, var(--yellow-dark));
   --blue-light: color-mix(in srgb, var(--blue) 65%, white);
   --blue-deep: color-mix(in srgb, var(--blue) 75%, var(--blue-dark));
   --ink: #0B4A30; /* texte sombre dans les champs blancs */
@@ -28,7 +32,7 @@
   --card-foreground: var(--text);
   --popover: #ffffff;
   --popover-foreground: var(--ink);
-  --primary: var(--orange);
+  --primary: var(--yellow);
   --primary-foreground: var(--text);
   --secondary: var(--blue);
   --secondary-foreground: var(--text);
@@ -52,8 +56,10 @@
   --color-poke-green: var(--bg);
   --color-poke-green-light: var(--bg-light);
   --color-poke-green-dark: var(--bg-dark);
-  --color-poke-orange: var(--orange);
-  --color-poke-orange-dark: var(--orange-dark);
+  --color-poke-red: var(--red);
+  --color-poke-red-dark: var(--red-dark);
+  --color-poke-yellow: var(--yellow);
+  --color-poke-yellow-dark: var(--yellow-dark);
   --color-poke-blue: var(--blue);
   --color-poke-blue-dark: var(--blue-dark);
   --color-ink: var(--ink);
@@ -107,9 +113,9 @@
   color: var(--text);
   text-shadow: 2px 2px 0 var(--bg-dark);
 }
-@utility txt-orange {
+@utility txt-yellow {
   color: var(--text);
-  text-shadow: 2px 2px 0 var(--orange-dark);
+  text-shadow: 2px 2px 0 var(--yellow-dark);
 }
 @utility txt-blue {
   color: var(--text);
@@ -138,14 +144,23 @@
 }
 
 /* ---------- Boutons ---------- */
-@utility btn-orange {
-  background-image: linear-gradient(to bottom, var(--orange-light), var(--orange) 50%, var(--orange-deep));
-  border: 2px solid var(--orange-dark);
+@utility btn-yellow {
+  background-image: linear-gradient(to bottom, var(--yellow-light), var(--yellow) 50%, var(--yellow-deep));
+  border: 2px solid var(--yellow-dark);
   box-shadow:
     inset 0 2px 0 rgb(255 255 255 / 0.45),
-    0 4px 0 var(--orange-dark);
+    0 4px 0 var(--yellow-dark);
   color: var(--text);
-  text-shadow: 2px 2px 0 var(--orange-dark);
+  text-shadow: 2px 2px 0 var(--yellow-dark);
+}
+@utility btn-red {
+  background-image: linear-gradient(to bottom, var(--red-light), var(--red) 50%, var(--red-deep));
+  border: 2px solid var(--red-dark);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.45),
+    0 4px 0 var(--red-dark);
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--red-dark);
 }
 @utility btn-blue {
   background-image: linear-gradient(to bottom, var(--blue-light), var(--blue) 50%, var(--blue-deep));
