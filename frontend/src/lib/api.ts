@@ -20,6 +20,8 @@ export type Pokemon = {
   region: string;
   legendary: boolean;
   mythical: boolean;
+  /** rareté 1-100 du Pokédex ; null tant que la région n'est pas équilibrée */
+  rarity: number | null;
 };
 
 export type OwnedPokemon = {
@@ -98,8 +100,10 @@ export type SessionCapture = {
   isNew: boolean;
   levelAfter: number;
   capturedAt: string;
-  /** probabilité (0-1) qu'avait ce Pokémon d'être tiré ; absente tant que le backend ne la fournit pas */
-  dropChance?: number | null;
+  /** probabilité (0-1) de tirer ce Pokémon, bonus de série compris ; null pour les anciennes captures */
+  dropChance: number | null;
+  /** même probabilité sans le bonus de série ; null pour les anciennes captures */
+  baseDropChance: number | null;
   pokemon: Pokemon;
 };
 
@@ -113,6 +117,8 @@ export type WorkSession = {
   pausedAt: string | null;
   pausedMs: number;
   endedAt: string | null;
+  /** série de jours utilisée pour le tirage ; null si pas terminée ou terminée avant ce champ */
+  streakDays: number | null;
   /** temps effectif écoulé (pauses exclues) au moment de la réponse */
   elapsedMs: number;
   theme: Theme | null;

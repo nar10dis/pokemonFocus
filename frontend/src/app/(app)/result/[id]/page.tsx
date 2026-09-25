@@ -13,8 +13,8 @@ import { PokeButton } from "@/components/poke-button"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { api } from "@/lib/api"
-import { formatDropChance } from "@/lib/capture"
 import { keys, useProfile, useWeekSessions } from "@/lib/queries"
+import { oddsLabel, rarityTier, streakBonusLabel } from "@/lib/rarity"
 import { dailyGoalMinutes, formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
@@ -85,38 +85,51 @@ export default function ResultPage() {
         </CardHeader>
         <CardContent>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {s.captures.map((c, i) => (
-              <motion.li
-                key={c.id}
-                initial={{ opacity: 0, scale: 0.3, rotate: -12 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.3 + i * 0.25 }}
-                className="tile relative flex flex-col items-center gap-1 rounded-xl p-3"
-              >
-                <span
-                  className={cn(
-                    "absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
-                    c.isNew ? "btn-yellow" : "btn-blue",
-                  )}
+            {s.captures.map((c, i) => {
+              const tier = rarityTier(c.pokemon)
+              const odds = oddsLabel(c.dropChance)
+              const bonus = streakBonusLabel(c, s.streakDays)
+              return (
+                <motion.li
+                  key={c.id}
+                  initial={{ opacity: 0, scale: 0.3, rotate: -12 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.3 + i * 0.25 }}
+                  // focusable pour que le toucher (mobile) affiche la chance comme le survol
+                  tabIndex={odds ? 0 : undefined}
+                  className="group tile relative flex flex-col items-center gap-1 rounded-xl p-3 outline-none"
                 >
-                  {c.isNew ? (
-                    <>
-                      <Sparkles className="size-3" /> Nouveau
-                    </>
-                  ) : (
-                    <>
-                      <ArrowUp className="size-3" /> Niv. {c.levelAfter}
-                    </>
+                  <span
+                    className={cn(
+                      "absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
+                      c.isNew ? "btn-yellow" : "btn-blue",
+                    )}
+                  >
+                    {c.isNew ? (
+                      <>
+                        <Sparkles className="size-3" /> Nouveau
+                      </>
+                    ) : (
+                      <>
+                        <ArrowUp className="size-3" /> Niv. {c.levelAfter}
+                      </>
+                    )}
+                  </span>
+                  <PokemonImage pokemon={c.pokemon} size={112} priority />
+                  <p className="txt text-xs font-bold">#{String(c.pokemon.id).padStart(3, "0")}</p>
+                  <p className="txt font-heading text-lg">{c.pokemon.name}</p>
+                  <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold text-white", tier.className)}>
+                    {"★".repeat(tier.stars)} {tier.label}
+                  </span>
+                  {bonus && <p className="txt-yellow text-center text-xs font-bold">{bonus}</p>}
+                  {odds && (
+                    <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-1/2 rounded-md bg-white px-2 py-1 text-xs font-bold whitespace-nowrap text-ink opacity-0 shadow-[0_3px_0_var(--bg-dark)] transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+                      {odds}
+                    </span>
                   )}
-                </span>
-                <PokemonImage pokemon={c.pokemon} size={112} priority />
-                <p className="txt text-xs font-bold">#{String(c.pokemon.id).padStart(3, "0")}</p>
-                <p className="txt font-heading text-lg">{c.pokemon.name}</p>
-                {c.dropChance != null && (
-                  <p className="txt text-xs font-semibold">{formatDropChance(c.dropChance)} de chance</p>
-                )}
-              </motion.li>
-            ))}
+                </motion.li>
+              )
+            })}
           </ul>
         </CardContent>
       </Card>
