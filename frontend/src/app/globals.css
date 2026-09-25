@@ -133,6 +133,11 @@
   border: 3px solid var(--bg-dark);
   box-shadow:
     inset 0 0 0 2px rgb(255 255 255 / 0.35),
+    0 1px 0 var(--bg-dark),
+    0 2px 0 var(--bg-dark),
+    0 3px 0 var(--bg-dark),
+    0 4px 0 var(--bg-dark),
+    0 5px 0 var(--bg-dark),
     0 6px 0 var(--bg-dark);
 }
 
@@ -144,11 +149,16 @@
 }
 
 /* ---------- Boutons ---------- */
+/* Relief = ombres empilées de 1px en 1px : une seule ombre décalée de 4px
+   se détache dans les coins arrondis et donne l'effet d'un bouton doublé. */
 @utility btn-yellow {
   background-image: linear-gradient(to bottom, var(--yellow-light), var(--yellow) 50%, var(--yellow-deep));
   border: 2px solid var(--yellow-dark);
   box-shadow:
     inset 0 2px 0 rgb(255 255 255 / 0.45),
+    0 1px 0 var(--yellow-dark),
+    0 2px 0 var(--yellow-dark),
+    0 3px 0 var(--yellow-dark),
     0 4px 0 var(--yellow-dark);
   color: var(--text);
   text-shadow: 2px 2px 0 var(--yellow-dark);
@@ -158,6 +168,9 @@
   border: 2px solid var(--red-dark);
   box-shadow:
     inset 0 2px 0 rgb(255 255 255 / 0.45),
+    0 1px 0 var(--red-dark),
+    0 2px 0 var(--red-dark),
+    0 3px 0 var(--red-dark),
     0 4px 0 var(--red-dark);
   color: var(--text);
   text-shadow: 2px 2px 0 var(--red-dark);
@@ -167,6 +180,9 @@
   border: 2px solid var(--blue-dark);
   box-shadow:
     inset 0 2px 0 rgb(255 255 255 / 0.45),
+    0 1px 0 var(--blue-dark),
+    0 2px 0 var(--blue-dark),
+    0 3px 0 var(--blue-dark),
     0 4px 0 var(--blue-dark);
   color: var(--text);
   text-shadow: 2px 2px 0 var(--blue-dark);
