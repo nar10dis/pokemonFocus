@@ -48,3 +48,17 @@ export function rollCaptures(
     return pool[pool.length - 1];
   });
 }
+
+/**
+ * Niveau obtenu par chaque capture, dans l'ordre : un doublon (déjà possédé, ou déjà
+ * capturé plus tôt dans la session) monte d'un niveau. `ownedLevels` : pokemonId → niveau.
+ */
+export function levelUpCaptures(pokemonIds: number[], ownedLevels: Map<number, number>) {
+  const levels = new Map(ownedLevels);
+  return pokemonIds.map((pokemonId) => {
+    const current = levels.get(pokemonId);
+    const levelAfter = current === undefined ? 1 : Math.min(current + 1, CAPTURE_CONFIG.maxLevel);
+    levels.set(pokemonId, levelAfter);
+    return { pokemonId, isNew: current === undefined, levelAfter };
+  });
+}

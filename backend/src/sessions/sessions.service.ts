@@ -9,8 +9,7 @@ import { PokemonService } from '../pokemon/pokemon.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StatsService } from '../stats/stats.service.js';
 import { ThemesService } from '../themes/themes.service.js';
-import { CAPTURE_CONFIG } from './capture.config.js';
-import { rarityCapFor, rollCaptures } from './capture.js';
+import { levelUpCaptures, rarityCapFor, rollCaptures } from './capture.js';
 import type { ListSessionsQuery, StartSessionDto } from './sessions.dto.js';
 
 /** marge tolérée entre l'horloge du client et celle du serveur */
@@ -167,24 +166,35 @@ export class SessionsService {
       });
       if (count === 0) throw new ConflictException('Session déjà terminée');
 
-      for (const p of picks) {
-        const owned = await tx.ownedPokemon.findUnique({
-          where: { userId_pokemonId: { userId, pokemonId: p.id } },
-        });
-        const now = new Date();
-        const level = owned ? Math.min(owned.level + 1, CAPTURE_CONFIG.maxLevel) : 1;
-        if (owned) {
-          await tx.ownedPokemon.update({
-            where: { id: owned.id },
-            data: { level, captureCount: { increment: 1 }, lastCapturedAt: now },
-          });
-        } else {
-          await tx.ownedPokemon.create({ data: { userId, pokemonId: p.id } });
-        }
-        await tx.sessionCapture.create({
-          data: { sessionId: id, pokemonId: p.id, isNew: !owned, levelAfter: level },
+      const pokemonIds = picks.map((p) => p.id);
+      const owned = await tx.ownedPokemon.findMany({
+        where: { userId, pokemonId: { in: pokemonIds } },
+        select: { pokemonId: true, level: true },
+      });
+      const captures = levelUpCaptures(pokemonIds, new Map(owned.map((o) => [o.pokemonId, o.level])));
+
+      // état final par Pokémon : dernier niveau atteint et nombre de captures
+      const totals = new Map<number, { level: number; count: number }>();
+      for (const c of captures)
+        totals.set(c.pokemonId, { level: c.levelAfter, count: (totals.get(c.pokemonId)?.count ?? 0) + 1 });
+
+      const wasOwned = new Set(owned.map((o) => o.pokemonId));
+      const now = new Date();
+      await tx.ownedPokemon.createMany({
+        data: [...totals]
+          .filter(([pokemonId]) => !wasOwned.has(pokemonId))
+          .map(([pokemonId, { level, count }]) => ({ userId, pokemonId, level, captureCount: count })),
+      });
+      for (const [pokemonId, { level, count }] of totals) {
+        if (!wasOwned.has(pokemonId)) continue;
+        await tx.ownedPokemon.update({
+          where: { userId_pokemonId: { userId, pokemonId } },
+          data: { level, captureCount: { increment: count }, lastCapturedAt: now },
         });
       }
+      await tx.sessionCapture.createMany({
+        data: captures.map((c) => ({ sessionId: id, ...c })),
+      });
     });
     return this.get(userId, id);
   }

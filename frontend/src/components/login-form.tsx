@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -23,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { ApiError, authApi } from "@/lib/api"
 import { keys } from "@/lib/queries"
+import { PokeButton } from "@/components/poke-button"
 
 export function LoginForm() {
   const router = useRouter()
@@ -87,9 +87,9 @@ export function LoginForm() {
               <FieldError errors={errors.map((message) => ({ message }))} />
             )}
             <Field>
-              <Button type="submit" size="lg" disabled={pending}>
+              <PokeButton type="submit" size="lg" disabled={pending}>
                 {pending ? "Connexion…" : "Se connecter"}
-              </Button>
+              </PokeButton>
               <FieldDescription className="text-center">
                 Pas encore de compte ?{" "}
                 <Link href="/register" className="txt font-bold">

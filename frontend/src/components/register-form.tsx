@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -23,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { ApiError, authApi } from "@/lib/api"
 import { keys } from "@/lib/queries"
+import { PokeButton } from "@/components/poke-button"
 
 export function RegisterForm() {
   const router = useRouter()
@@ -117,9 +117,9 @@ export function RegisterForm() {
               <FieldError errors={errors.map((message) => ({ message }))} />
             )}
             <Field>
-              <Button type="submit" size="lg" disabled={pending}>
+              <PokeButton type="submit" size="lg" disabled={pending}>
                 {pending ? "Création…" : "Créer mon compte"}
-              </Button>
+              </PokeButton>
               <FieldDescription className="text-center">
                 Déjà un compte ?{" "}
                 <Link href="/" className="txt font-bold">

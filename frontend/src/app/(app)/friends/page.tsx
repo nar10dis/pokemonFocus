@@ -8,12 +8,12 @@ import { toast } from "sonner"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
 import { TrainerAvatar } from "@/components/trainer-avatar"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { api, errorMessage, type Friend, type FriendRequest } from "@/lib/api"
 import { keys, useFriendRequests, useFriends } from "@/lib/queries"
 import { timeAgo } from "@/lib/time"
+import { PokeButton } from "@/components/poke-button"
 
 export default function FriendsPage() {
   const queryClient = useQueryClient()
@@ -75,9 +75,9 @@ export default function FriendsPage() {
               placeholder="Pseudo ou #ID"
               aria-label="Pseudo ou ID dresseur"
             />
-            <Button type="submit" disabled={send.isPending || !query.trim()}>
+            <PokeButton type="submit" disabled={send.isPending || !query.trim()}>
               <UserPlus data-icon="inline-start" /> Envoyer
-            </Button>
+            </PokeButton>
           </form>
         </CardContent>
       </Card>
@@ -90,19 +90,19 @@ export default function FriendsPage() {
           <CardContent className="flex flex-col gap-2">
             {incoming.map((r) => (
               <RequestRow key={r.id} request={r} label="veut être ton ami">
-                <Button size="sm" onClick={() => accept.mutate(r.id)} disabled={accept.isPending}>
+                <PokeButton size="sm" onClick={() => accept.mutate(r.id)} disabled={accept.isPending}>
                   <Check data-icon="inline-start" /> Accepter
-                </Button>
-                <Button size="sm" variant="red" onClick={() => decline.mutate(r.id)} aria-label="Refuser">
+                </PokeButton>
+                <PokeButton color="red" size="sm" onClick={() => decline.mutate(r.id)} aria-label="Refuser">
                   <X />
-                </Button>
+                </PokeButton>
               </RequestRow>
             ))}
             {outgoing.map((r) => (
               <RequestRow key={r.id} request={r} label="demande envoyée">
-                <Button size="sm" variant="red" onClick={() => decline.mutate(r.id)}>
+                <PokeButton color="red" size="sm" onClick={() => decline.mutate(r.id)}>
                   Annuler
-                </Button>
+                </PokeButton>
               </RequestRow>
             ))}
           </CardContent>
@@ -155,9 +155,9 @@ function FriendCard({ friend: f, index, onRemove }: { friend: Friend; index: num
               <p className="txt truncate font-heading text-lg">{f.username}</p>
               <p className="txt truncate text-sm font-semibold">{f.title}</p>
             </div>
-            <Button size="icon-sm" variant="red" onClick={onRemove} aria-label={`Retirer ${f.username}`}>
+            <PokeButton color="red" size="icon" onClick={onRemove} aria-label={`Retirer ${f.username}`}>
               <UserMinus />
-            </Button>
+            </PokeButton>
           </div>
           <p className="txt text-sm font-semibold">Dernière connexion : {timeAgo(f.lastLoginAt)}</p>
 
