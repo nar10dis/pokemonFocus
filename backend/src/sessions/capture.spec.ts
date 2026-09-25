@@ -41,9 +41,15 @@ const bigPool = (rare: Partial<Pokemon>) => [
 describe('rollCaptures', () => {
   const pool = [mon(1), mon(2), mon(3)];
 
-  it('garantit le minimum de captures même sans chance', () => {
-    const picks = rollCaptures(pool, 60, () => 0.999);
-    expect(picks).toHaveLength(CAPTURE_CONFIG.minCaptures);
+  it('garantit 1 capture par tranche de 20 minutes même sans chance', () => {
+    expect(rollCaptures(pool, 30, () => 0.999)).toHaveLength(1);
+    expect(rollCaptures(pool, 59, () => 0.999)).toHaveLength(2);
+    expect(rollCaptures(pool, 60, () => 0.999)).toHaveLength(3);
+    expect(rollCaptures(pool, 240, () => 0.999)).toHaveLength(12);
+  });
+
+  it('le minimum garanti ne plafonne pas les captures chanceuses', () => {
+    expect(rollCaptures(pool, 60, () => 0)).toHaveLength(60);
   });
 
   it('garantit le minimum même pour une session de 0 minute', () => {

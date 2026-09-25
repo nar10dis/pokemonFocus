@@ -39,7 +39,8 @@ export function rollCaptures(
 ): CapturePick[] {
   let count = 0;
   for (let i = 0; i < minutes; i++) if (random() < CAPTURE_CONFIG.chancePerMinute) count++;
-  count = Math.max(count, CAPTURE_CONFIG.minCaptures);
+  const guaranteed = Math.floor(minutes / CAPTURE_CONFIG.minutesPerGuaranteedCapture);
+  count = Math.max(count, guaranteed, CAPTURE_CONFIG.minCaptures);
 
   const total = pool.reduce((sum, p) => sum + weight(p, maxRarityCap), 0);
   const pick = (p: Pokemon) => ({ ...p, dropChance: weight(p, maxRarityCap) / total });

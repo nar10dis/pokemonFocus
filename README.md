@@ -415,14 +415,19 @@ minute et par IP : au-delà, `429` avec un message à afficher tel quel.
 
 ## 7. Mécanique de capture
 
-À la fin d'une session complétée, une tentative de capture est tirée pour
-chaque minute planifiée. Paramètres dans `backend/src/sessions/capture.config.ts`
-(provisoires, à équilibrer) :
+À la fin d'une session complétée, le serveur tire les captures. Paramètres dans
+`backend/src/sessions/capture.config.ts` (provisoires, à équilibrer) :
 
-- 8 % de chance par minute, minimum 3 captures par session terminée
-- poids de tirage : normal `1`, légendaire `0.05`, mythique `0.02`
-- un doublon fait monter le Pokémon d'un niveau (max 100)
-- durée de session autorisée : 5 à 240 minutes
+- 8 % de chance de capture par minute planifiée ;
+- minimum garanti : 1 capture par tranche complète de 20 minutes (30 min → 1,
+  1 h → 3, 4 h → 12), et jamais moins de 1 ;
+- le Pokémon est tiré dans la région de la session, avec un poids
+  `101 - rareté` : plus il est rare, moins il sort. Une série de jours
+  travaillés d'affilée plafonne la rareté prise en compte, ce qui avantage les
+  rares ;
+- chaque capture enregistre sa chance de tirage (`dropChance`) ;
+- un doublon fait monter le Pokémon d'un niveau (max 100) ;
+- durée de session autorisée : 30 à 240 minutes.
 
 ---
 

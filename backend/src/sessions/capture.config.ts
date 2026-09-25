@@ -5,8 +5,14 @@
 export const CAPTURE_CONFIG = {
   /** probabilité de capture à chaque minute */
   chancePerMinute: 0.08,
-  /** nombre minimum de captures garanti par session terminée */
+  /** plancher absolu de captures par session terminée */
   minCaptures: 1,
+  /**
+   * 1 capture garantie par tranche complète de N minutes (30 min → 1, 1 h → 3,
+   * 4 h → 12) : évite qu'une longue session tombe à 1 capture par malchance
+   * (~4 % des sessions d'1 h avec seulement la chance par minute).
+   */
+  minutesPerGuaranteedCapture: 20,
   /**
    * Poids du tirage = `rarityScale - rareté` : un Pokémon à 6 % sort 95 fois plus
    * souvent qu'un mythique à 100 %. Les légendaires (98-99 %) restent ~25 fois
