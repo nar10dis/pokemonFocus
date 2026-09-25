@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loading, PageShell } from "@/components/page-shell"
+import { PokeButton } from "@/components/poke-button"
 import { ProgressBar } from "@/components/progress-bar"
 import { SpriteAnimation } from "@/components/sprite-animation"
 import { WeeklyChart } from "@/components/weekly-chart"
@@ -32,10 +33,7 @@ export default function HomePage() {
   return (
     <PageShell title={`Salut ${username} !`} subtitle={title} back={null}>
       {active.data && (
-        <Link
-          href="/working"
-          className="btn-blue flex items-center justify-between gap-4 rounded-xl px-5 py-4 transition-[filter] hover:brightness-105"
-        >
+        <PokeButton href="/working" color="blue" className="h-auto justify-between gap-4 rounded-xl px-5 py-4 text-base">
           <span className="flex items-center gap-3 font-bold">
             <Hourglass className="size-5" /> Session en cours · {active.data.region}
             {active.data.status === "PAUSED" && " (en pause)"}
@@ -43,7 +41,7 @@ export default function HomePage() {
           <span className="font-heading text-lg">
             {formatClock(active.data.plannedMinutes * 60_000 - active.data.elapsedMs)} ›
           </span>
-        </Link>
+        </PokeButton>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

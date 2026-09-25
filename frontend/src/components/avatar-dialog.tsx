@@ -6,7 +6,6 @@ import { useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { PokemonImage } from "@/components/pokemon-image"
 import { AVATAR_COLORS, TrainerAvatar } from "@/components/trainer-avatar"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ import {
 } from "@/lib/cosmetics"
 import { keys, useCollection, usePokedex } from "@/lib/queries"
 import { cn } from "@/lib/utils"
+import { PokeButton } from "@/components/poke-button"
 
 /** même limite que le backend */
 const MAX_COSMETICS = 10
@@ -210,9 +210,9 @@ export function AvatarDialog({ profile }: { profile: Profile }) {
               {selected !== null && cosmetics[selected] ? (
                 <>
                   <span className="txt text-sm font-bold">{COSMETICS_BY_ID.get(cosmetics[selected].id)?.label}</span>
-                  <Button
+                  <PokeButton
+                    color="blue"
                     size="sm"
-                    variant="secondary"
                     onClick={() => patchSelected({ back: !cosmetics[selected].back })}
                   >
                     {cosmetics[selected].back ? (
@@ -224,10 +224,10 @@ export function AvatarDialog({ profile }: { profile: Profile }) {
                         <ArrowDownToLine data-icon="inline-start" /> Derrière
                       </>
                     )}
-                  </Button>
-                  <Button size="icon-sm" variant="red" onClick={remove} aria-label="Retirer l'accessoire">
+                  </PokeButton>
+                  <PokeButton color="red" size="icon" onClick={remove} aria-label="Retirer l'accessoire">
                     <Trash2 />
-                  </Button>
+                  </PokeButton>
                 </>
               ) : (
                 <span className="txt text-xs font-semibold opacity-80">
@@ -385,9 +385,9 @@ export function AvatarDialog({ profile }: { profile: Profile }) {
                   ))}
                 </ul>
                 {cosmetics.length > 0 && (
-                  <Button
+                  <PokeButton
+                    color="red"
                     size="sm"
-                    variant="red"
                     className="self-end"
                     onClick={() => {
                       setCosmetics([])
@@ -395,7 +395,7 @@ export function AvatarDialog({ profile }: { profile: Profile }) {
                     }}
                   >
                     <Trash2 data-icon="inline-start" /> Tout retirer
-                  </Button>
+                  </PokeButton>
                 )}
               </>
             )}
@@ -403,9 +403,9 @@ export function AvatarDialog({ profile }: { profile: Profile }) {
         </div>
 
         <DialogFooter>
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <PokeButton onClick={() => save.mutate()} disabled={save.isPending}>
             Enregistrer
-          </Button>
+          </PokeButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

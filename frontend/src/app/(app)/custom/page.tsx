@@ -35,6 +35,7 @@ import { api, errorMessage, type Theme, type ThemeInput } from "@/lib/api"
 import { keys, useProfile, useThemes, useWeekSessions } from "@/lib/queries"
 import { dailyGoalMinutes, DAY_LABELS, formatMinutes, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
+import { PokeButton } from "@/components/poke-button"
 
 const EMOJIS = ["📚", "💻", "📐", "🧪", "🎨", "🎵", "✍️", "🌍", "🧠", "📊", "🏃", "🎮", "🔬", "📝", "💼", "🧘"]
 const COLORS = ["#F2B56C", "#65B5F6", "#18D384", "#E86A6A", "#B98CF2", "#F2D56C", "#6CE0D8", "#F28CC8"]
@@ -105,7 +106,7 @@ export default function CustomPage() {
                     <ThemeDialog theme={t} />
                     <AlertDialog>
                       <AlertDialogTrigger
-                        render={<Button size="icon-sm" variant="red" aria-label={`Supprimer ${t.name}`} />}
+                        render={<PokeButton color="red" size="icon" aria-label={`Supprimer ${t.name}`} />}
                       >
                         <Trash2 />
                       </AlertDialogTrigger>
@@ -118,8 +119,8 @@ export default function CustomPage() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel variant="secondary">Annuler</AlertDialogCancel>
-                          <AlertDialogAction variant="red" onClick={() => remove.mutate(t.id)}>Supprimer</AlertDialogAction>
+                          <AlertDialogCancel color="blue">Annuler</AlertDialogCancel>
+                          <AlertDialogAction color="red" onClick={() => remove.mutate(t.id)}>Supprimer</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -181,9 +182,9 @@ function WeeklyGoalCard({ goal, done, workDays }: { goal: number; done: number; 
             aria-label="Objectif en heures par semaine"
           />
           <span className="txt font-bold">heures / semaine</span>
-          <Button type="submit" variant="secondary" disabled={hours === null || save.isPending}>
+          <PokeButton color="blue" type="submit" disabled={hours === null || save.isPending}>
             Enregistrer
-          </Button>
+          </PokeButton>
         </form>
         <div className="flex flex-col gap-2">
           <p className="txt text-sm font-bold">
@@ -305,7 +306,7 @@ function ThemeDialog({ theme }: { theme?: Theme }) {
           <Pencil />
         </DialogTrigger>
       ) : (
-        <DialogTrigger render={<Button className="self-start" />}>
+        <DialogTrigger render={<PokeButton className="self-start" />}>
           <Plus data-icon="inline-start" /> Nouveau thème
         </DialogTrigger>
       )}
@@ -387,9 +388,9 @@ function ThemeDialog({ theme }: { theme?: Theme }) {
           </FieldGroup>
         </form>
         <DialogFooter>
-          <Button type="submit" form="theme-form" disabled={save.isPending || !form.name.trim()}>
+          <PokeButton type="submit" form="theme-form" disabled={save.isPending || !form.name.trim()}>
             {theme ? "Enregistrer" : "Créer"}
-          </Button>
+          </PokeButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -11,6 +11,7 @@ import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
 import { ProgressBar } from "@/components/progress-bar"
 import { CoverFrom } from "@/components/start-transition"
+import { PokeButton } from "@/components/poke-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -102,9 +103,9 @@ export default function GoWorkPage() {
   return (
     <PageShell title="Go Work !" subtitle="Prépare ta prochaine session de focus.">
       {active.data && (
-        <Link href="/working" className="btn-blue rounded-xl px-5 py-4 font-bold">
+        <PokeButton href="/working" color="blue" className="h-auto justify-start rounded-xl px-5 py-4 text-base">
           Tu as déjà une session en cours · la reprendre ›
-        </Link>
+        </PokeButton>
       )}
 
       <Card>
@@ -225,16 +226,16 @@ export default function GoWorkPage() {
       </div>
 
       <motion.div className="self-center" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
-        <Button
+        <PokeButton
+          color="red"
           ref={startButton}
-          variant="red"
           size="lg"
           className="h-16 px-12 font-heading text-2xl"
           disabled={!validMinutes || start.isPending || !!active.data || !!cover}
           onClick={() => start.mutate()}
         >
           {start.isPending || cover ? "Lancement…" : "C'est parti !"}
-        </Button>
+        </PokeButton>
       </motion.div>
       {cover && <CoverFrom from={cover} onCovered={() => router.push("/working")} />}
 

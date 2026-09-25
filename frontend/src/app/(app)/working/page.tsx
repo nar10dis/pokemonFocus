@@ -18,12 +18,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
 import { WalkingTrainer } from "@/components/walking-trainer"
 import { api, errorMessage, type WorkSession } from "@/lib/api"
 import { ALERT_BUBBLE_MS, CAPTURE_CHANCE_PER_MINUTE } from "@/lib/capture"
 import { keys, useActiveSession } from "@/lib/queries"
 import { formatClock, formatMinutes } from "@/lib/time"
+import { PokeButton } from "@/components/poke-button"
 
 const SIZE = 320
 const STROKE = 22
@@ -185,21 +185,21 @@ export default function WorkingPage() {
 
       <div className="flex flex-wrap justify-center gap-4">
         {paused ? (
-          <Button size="lg" variant="secondary" onClick={() => resume.mutate(session.id)} disabled={resume.isPending}>
+          <PokeButton color="blue" size="lg" onClick={() => resume.mutate(session.id)} disabled={resume.isPending}>
             <Play data-icon="inline-start" /> Reprendre
-          </Button>
+          </PokeButton>
         ) : (
-          <Button
+          <PokeButton
+            color="blue"
             size="lg"
-            variant="secondary"
             onClick={() => pause.mutate(session.id)}
             disabled={pause.isPending || done}
           >
             <Pause data-icon="inline-start" /> Pause
-          </Button>
+          </PokeButton>
         )}
         <AlertDialog>
-          <AlertDialogTrigger render={<Button size="lg" variant="red" disabled={done} />}>
+          <AlertDialogTrigger render={<PokeButton color="red" size="lg" disabled={done} />}>
             <Flag data-icon="inline-start" /> Abandonner
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -211,9 +211,9 @@ export default function WorkingPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel variant="secondary">Continuer</AlertDialogCancel>
+              <AlertDialogCancel color="blue">Continuer</AlertDialogCancel>
               <AlertDialogAction
-                variant="red"
+                color="red"
                 onClick={() => abandon.mutate(session.id)}
                 disabled={abandon.isPending}
               >

@@ -9,6 +9,7 @@ import { useEffect, useMemo } from "react"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
 import { ProgressBar } from "@/components/progress-bar"
+import { PokeButton } from "@/components/poke-button"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { api } from "@/lib/api"
@@ -39,9 +40,9 @@ export default function ResultPage() {
   if (s.status === "ABANDONED") {
     return (
       <PageShell title="Session abandonnée" subtitle="Rien n'a été gagné cette fois… la prochaine sera la bonne !">
-        <Link href="/go-work" className={cn(buttonVariants({ size: "lg" }), "self-start")}>
+        <PokeButton href="/go-work" size="lg" className="self-start">
           Relancer une session
-        </Link>
+        </PokeButton>
       </PageShell>
     )
   }
@@ -117,15 +118,15 @@ export default function ResultPage() {
       </Card>
 
       <div className="flex flex-wrap justify-center gap-4">
-        <Link href="/home" className={buttonVariants({ size: "lg", variant: "secondary" })}>
+        <PokeButton href="/home" color="blue" size="lg">
           Accueil
-        </Link>
+        </PokeButton>
         <Link href="/pokemon" className={buttonVariants({ size: "lg", variant: "outline" })}>
           Mes Pokémon
         </Link>
-        <Link href="/go-work" className={buttonVariants({ size: "lg" })}>
+        <PokeButton href="/go-work" size="lg">
           Encore une session !
-        </Link>
+        </PokeButton>
       </div>
     </PageShell>
   )

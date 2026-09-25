@@ -44,6 +44,7 @@ import { keys, useFriends, usePokedex, useProfile, useTitles } from "@/lib/queri
 import { isVisibleRegion, REGIONS } from "@/lib/regions"
 import { dateFormat, dateTimeFormat, formatMinutes, timeAgo } from "@/lib/time"
 import { cn } from "@/lib/utils"
+import { PokeButton } from "@/components/poke-button"
 
 const NONE = "none"
 
@@ -105,9 +106,9 @@ export default function ProfilePage() {
     <PageShell
       title="Carte Dresseur"
       actions={
-        <Button onClick={logout} variant="red">
+        <PokeButton color="red" onClick={logout}>
           <LogOut data-icon="inline-start" /> Déconnexion
-        </Button>
+        </PokeButton>
       }
     >
       <Card>
@@ -329,9 +330,9 @@ function TitleDialog({ current }: { current: { noun: string | null; adjective: s
           onSelect={setAdjective}
         />
         <DialogFooter>
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <PokeButton onClick={() => save.mutate()} disabled={save.isPending}>
             Enregistrer
-          </Button>
+          </PokeButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
