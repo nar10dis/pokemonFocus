@@ -50,6 +50,14 @@ export class AuthService {
     return UsersService.toPublic(user);
   }
 
+  async deleteAccount(userId: number, password: string) {
+    const user = await this.users.findById(userId);
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('Mot de passe incorrect');
+    }
+    await this.users.delete(userId);
+  }
+
   private sign(userId: number) {
     return this.jwt.signAsync({ sub: userId });
   }
