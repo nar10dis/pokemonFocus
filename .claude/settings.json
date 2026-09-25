@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git log *)",
+      "Bash(git diff*)",
+      "Bash(git show *)",
+      "Bash(git branch --show-current)",
+      "Bash(git worktree list*)",
+      "Bash(git fetch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git push origin *)",
+      "Bash(git push -u origin *)",
+      "Bash(git -C * pull --ff-only origin main)",
+      "Bash(git -C * merge --ff-only *)",
+      "Bash(git -C * push origin main)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git -C * push * --force*)",
+      "Bash(git -C * push * -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git rebase *)",
+      "Bash(git branch -D *)",
+      "Bash(git worktree remove *)"
+    ]
+  }
+}

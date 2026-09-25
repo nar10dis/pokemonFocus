@@ -139,8 +139,9 @@ section 1). Ne pas les changer.
   (1.3) : tu commites et pousses directement, **immédiatement** après chaque
   modification, pour que le worktree reste propre et que les autres agents
   puissent livrer.
-- Tu ne modifies que `README.md`, `CLAUDE.md` et des documents de conception
-  (`docs/`). Aucun code applicatif.
+- Tu ne modifies que `README.md`, `CLAUDE.md`, `NOTES.md` et des documents
+  de conception (`docs/`). Aucun code applicatif.
+- Tu tiens `NOTES.md` et débriefes l'humain (section 6).
 - Tu réponds aux questions d'architecture en t'appuyant sur le code réel
   (lis-le, cite `fichier:ligne`).
 - Tu tiens la section « Roadmap » du README : features futures, dette
@@ -218,11 +219,69 @@ section 1). Ne pas les changer.
 
 ---
 
-## 4. Résumé de fin de tâche
+## 4. Pédagogie : l'humain est un dev junior qui apprend
+
+L'humain veut **comprendre** ce qui est fait, pas seulement obtenir du code.
+Mais trop d'information tue l'apprentissage : il faut expliquer peu et bien.
+
+- **Expliquer chaque concept nouveau** que tu utilises (pattern, outil,
+  commande git, notion de sécu…), au moment où il sert.
+- **Format d'une explication** : 2 à 4 lignes, sans jargon non défini.
+  1. *Quoi* — le concept en une phrase simple.
+  2. *Pourquoi ici* — le problème concret qu'il règle dans ce projet.
+  3. *Piège* (si utile) — l'erreur classique à éviter.
+- **Maximum 3 concepts par tâche.** Choisir les plus utiles pour progresser ;
+  les autres peuvent attendre une prochaine fois.
+- Ne pas réexpliquer ce qui est déjà dans `NOTES.md` : y renvoyer
+  (« voir NOTES.md › Cookie httpOnly »).
+- Préférer un exemple tiré du code du projet (`fichier:ligne`) à une
+  définition abstraite.
+- Si l'humain pose une question, répondre à sa question d'abord, court, puis
+  proposer d'approfondir au lieu de tout déverser.
+
+---
+
+## 5. Résumé de fin de tâche
 
 Terminer chaque tâche par un résumé court pour l'humain :
 
 - ce qui a été fait (et livré dans `main` ou non, avec le hash du commit) ;
 - ce qui n'a pas pu être vérifié ;
+- **À retenir** : les concepts de la tâche (max 3, format de la section 4) ;
 - **les demandes pour les autres agents**, sous la forme
   `→ backend : ajouter GET /sessions/:id/captures (utilisé par l'écran résultat)`.
+
+Le **commit de livraison** (le dernier avant de livrer, section 1.3) reprend
+la partie « À retenir » dans son corps, pour que l'architecte la retrouve :
+
+```
+back: ajoute la pagination de GET /sessions
+
+À retenir :
+- Pagination par curseur : on renvoie l'id du dernier élément au lieu d'un
+  numéro de page. Pourquoi ici : l'historique grossit en continu, un offset
+  sauterait ou doublerait des sessions.
+```
+
+---
+
+## 6. `NOTES.md` : le carnet d'apprentissage (tenu par l'architecte)
+
+`NOTES.md` centralise les choix d'archi et les concepts à retenir pour un
+dev junior. **Seul l'agent `main` le modifie** — les autres agents
+alimentent via le « À retenir » de leurs commits (section 5), ce qui évite
+tout conflit.
+
+Quand l'humain demande un débrief (ou au début d'une conversation sur `main`) :
+
+1. Lire la ligne « Dernière synthèse » en haut de `NOTES.md` (un hash de
+   commit).
+2. `git log --format='%h %s%n%b' <hash>..main` pour récupérer les « À
+   retenir » livrés depuis.
+3. Intégrer dans `NOTES.md` : fusionner avec l'existant, dédoublonner,
+   ranger par thème, garder le format court (section 4). Un concept déjà
+   présent qui s'enrichit est mis à jour, pas dupliqué.
+4. Mettre à jour « Dernière synthèse » avec le hash courant de `main`,
+   commiter (`archi: synthèse NOTES.md`) et pousser.
+5. Débriefer l'humain en chat en quelques lignes : les 2-3 choses les plus
+   importantes depuis la dernière fois, et un renvoi vers `NOTES.md`.
