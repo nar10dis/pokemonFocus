@@ -81,6 +81,15 @@ describe('rollCaptures', () => {
     expect(rollCaptures(duo, 0, sequence(0.7), 50)[0].id).toBe(2);
   });
 
+  it('donne la chance de tirage du Pokémon tiré, plafond de série compris', () => {
+    const duo = [mon(1, { rarity: 1 }), mon(2, { rarity: 100 })];
+    // sans plafond : poids 100 et 1 sur un total de 101
+    expect(rollCaptures(duo, 0, sequence(0.5), 100)[0].dropChance).toBeCloseTo(100 / 101);
+    expect(rollCaptures(duo, 0, sequence(0.999), 100)[0].dropChance).toBeCloseTo(1 / 101);
+    // plafond 50 : le rare pèse 51 sur un total de 151
+    expect(rollCaptures(duo, 0, sequence(0.7), 50)[0].dropChance).toBeCloseTo(51 / 151);
+  });
+
   it('rend les Pokémon à forte rareté rares', () => {
     const random = seeded(42);
     const picks = Array.from({ length: 200 }, () =>

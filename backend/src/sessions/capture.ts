@@ -27,25 +27,30 @@ export function rarityCapFor(streakDays: number): number {
   return Math.max(cap, CAPTURE_CONFIG.minRarityCap);
 }
 
+/** Pokémon tiré, avec sa probabilité (0-1) d'être tiré à ce tirage, plafond de série compris. */
+export type CapturePick = Pokemon & { dropChance: number };
+
 /** Tire les Pokémon capturés pour une session de `minutes` dans `pool` (doublons possibles). */
 export function rollCaptures(
   pool: Pokemon[],
   minutes: number,
   random = Math.random,
   maxRarityCap: number = CAPTURE_CONFIG.rarityCapByStreak[0].cap,
-): Pokemon[] {
+): CapturePick[] {
   let count = 0;
   for (let i = 0; i < minutes; i++) if (random() < CAPTURE_CONFIG.chancePerMinute) count++;
   count = Math.max(count, CAPTURE_CONFIG.minCaptures);
 
   const total = pool.reduce((sum, p) => sum + weight(p, maxRarityCap), 0);
+  const pick = (p: Pokemon) => ({ ...p, dropChance: weight(p, maxRarityCap) / total });
   return Array.from({ length: count }, () => {
     let r = random() * total;
     for (const p of pool) {
       r -= weight(p, maxRarityCap);
-      if (r <= 0) return p;
+      if (r <= 0) return pick(p);
     }
-    return pool[pool.length - 1];
+    const last = pool[pool.length - 1];
+    return last && pick(last);
   });
 }
 

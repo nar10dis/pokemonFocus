@@ -193,7 +193,7 @@ export class SessionsService {
         });
       }
       await tx.sessionCapture.createMany({
-        data: captures.map((c) => ({ sessionId: id, ...c })),
+        data: captures.map((c, i) => ({ sessionId: id, ...c, dropChance: picks[i].dropChance })),
       });
     });
     return this.get(userId, id);

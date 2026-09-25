@@ -134,6 +134,9 @@ model SessionCapture {
   /// true si c'était la première fois que le dresseur l'attrapait
   isNew      Boolean
   levelAfter Int
+  /// probabilité (0-1) de tirer ce Pokémon à ce tirage, plafond de série compris ;
+  /// null pour les captures antérieures à ce champ
+  dropChance Float?
   capturedAt DateTime @default(now())
 
   session WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)

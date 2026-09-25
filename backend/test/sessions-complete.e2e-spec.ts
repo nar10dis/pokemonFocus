@@ -44,7 +44,12 @@ describe('SessionsService.complete (intégration, base réelle)', () => {
       ],
     });
     // A déjà possédé, B nouveau capturé deux fois, C déjà au niveau max
-    vi.mocked(rollCaptures).mockReturnValue([a, b, b, c, a]);
+    const [pa, pb, pc] = [
+      { ...a, dropChance: 0.5 },
+      { ...b, dropChance: 0.3 },
+      { ...c, dropChance: 0.2 },
+    ];
+    vi.mocked(rollCaptures).mockReturnValue([pa, pb, pb, pc, pa]);
     const session = await prisma.workSession.create({
       data: { userId, region: a.region, plannedMinutes: 5, startedAt: new Date(Date.now() - 10 * 60_000) },
     });
@@ -52,12 +57,12 @@ describe('SessionsService.complete (intégration, base réelle)', () => {
     const result = await sessions.complete(userId, session.id);
 
     expect(result.status).toBe('COMPLETED');
-    expect(result.captures.map((x) => [x.pokemonId, x.isNew, x.levelAfter])).toEqual([
-      [a.id, false, 6],
-      [b.id, true, 1],
-      [b.id, false, 2],
-      [c.id, false, CAPTURE_CONFIG.maxLevel],
-      [a.id, false, 7],
+    expect(result.captures.map((x) => [x.pokemonId, x.isNew, x.levelAfter, x.dropChance])).toEqual([
+      [a.id, false, 6, 0.5],
+      [b.id, true, 1, 0.3],
+      [b.id, false, 2, 0.3],
+      [c.id, false, CAPTURE_CONFIG.maxLevel, 0.2],
+      [a.id, false, 7, 0.5],
     ]);
     const owned = await prisma.ownedPokemon.findMany({
       where: { userId },
@@ -73,7 +78,7 @@ describe('SessionsService.complete (intégration, base réelle)', () => {
 
   it('refuse de terminer deux fois la même session', async () => {
     const [a] = await prisma.pokemon.findMany({ take: 1 });
-    vi.mocked(rollCaptures).mockReturnValue([a]);
+    vi.mocked(rollCaptures).mockReturnValue([{ ...a, dropChance: 1 }]);
     const session = await prisma.workSession.create({
       data: { userId, region: a.region, plannedMinutes: 5, startedAt: new Date(Date.now() - 10 * 60_000) },
     });

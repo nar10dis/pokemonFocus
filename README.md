@@ -399,6 +399,17 @@ minute et par IP : au-delà, `429` avec un message à afficher tel quel.
 | POST    | `/friends/requests`, `/friends/requests/:id/accept` | Envoyer / accepter |
 | DELETE  | `/friends/requests/:id`, `/friends/:userId` | Refuser / supprimer     |
 
+**Captures d'une session** — `GET /sessions/:id` (ainsi que les réponses de
+`/complete` et `/simulate`) renvoie `captures[]`, dans l'ordre du tirage :
+
+| Champ        | Type             | Sens                                                   |
+| ------------ | ---------------- | ------------------------------------------------------ |
+| `pokemonId`, `pokemon` | `number`, objet | Pokémon capturé (objet complet inclus)     |
+| `isNew`      | `boolean`        | Première capture de ce Pokémon par le dresseur         |
+| `levelAfter` | `number`         | Niveau du Pokémon après cette capture                   |
+| `dropChance` | `number \| null` | Probabilité (0-1) de tirer ce Pokémon à ce tirage, plafond de série compris. `null` pour les captures antérieures à ce champ : ne rien afficher |
+| `capturedAt` | date ISO         | Horodatage de la capture                                |
+
 ---
 
 ## 7. Mécanique de capture
