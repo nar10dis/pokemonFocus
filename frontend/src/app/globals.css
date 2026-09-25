@@ -131,9 +131,8 @@
     var(--bg-deep) 100%
   );
   border: 3px solid var(--bg-dark);
-  box-shadow:
-    inset 0 0 0 2px rgb(255 255 255 / 0.35),
-    0 6px 0 var(--bg-dark);
+  border-bottom-width: 9px;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.35);
 }
 
 /* ---------- Tuile d'info (comme les icônes du menu HGSS) ---------- */
@@ -144,30 +143,29 @@
 }
 
 /* ---------- Boutons ---------- */
+/* Le relief est une bordure basse épaisse, pas une ombre décalée : dans les
+   coins arrondis, Firefox laisse un liseré entre l'ombre et la bordure. */
 @utility btn-yellow {
   background-image: linear-gradient(to bottom, var(--yellow-light), var(--yellow) 50%, var(--yellow-deep));
   border: 2px solid var(--yellow-dark);
-  box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 0.45),
-    0 4px 0 var(--yellow-dark);
+  border-bottom-width: 6px;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.45);
   color: var(--text);
   text-shadow: 2px 2px 0 var(--yellow-dark);
 }
 @utility btn-red {
   background-image: linear-gradient(to bottom, var(--red-light), var(--red) 50%, var(--red-deep));
   border: 2px solid var(--red-dark);
-  box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 0.45),
-    0 4px 0 var(--red-dark);
+  border-bottom-width: 6px;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.45);
   color: var(--text);
   text-shadow: 2px 2px 0 var(--red-dark);
 }
 @utility btn-blue {
   background-image: linear-gradient(to bottom, var(--blue-light), var(--blue) 50%, var(--blue-deep));
   border: 2px solid var(--blue-dark);
-  box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 0.45),
-    0 4px 0 var(--blue-dark);
+  border-bottom-width: 6px;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.45);
   color: var(--text);
   text-shadow: 2px 2px 0 var(--blue-dark);
 }
