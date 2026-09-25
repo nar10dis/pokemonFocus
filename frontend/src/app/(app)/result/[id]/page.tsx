@@ -13,6 +13,7 @@ import { PokeButton } from "@/components/poke-button"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { api } from "@/lib/api"
+import { formatDropChance } from "@/lib/capture"
 import { keys, useProfile, useWeekSessions } from "@/lib/queries"
 import { dailyGoalMinutes, formatMinutes, isSameDay, startOfWeek } from "@/lib/time"
 import { cn } from "@/lib/utils"
@@ -111,6 +112,9 @@ export default function ResultPage() {
                 <PokemonImage pokemon={c.pokemon} size={112} priority />
                 <p className="txt text-xs font-bold">#{String(c.pokemon.id).padStart(3, "0")}</p>
                 <p className="txt font-heading text-lg">{c.pokemon.name}</p>
+                {c.dropChance != null && (
+                  <p className="txt text-xs font-semibold">{formatDropChance(c.dropChance)} de chance</p>
+                )}
               </motion.li>
             ))}
           </ul>

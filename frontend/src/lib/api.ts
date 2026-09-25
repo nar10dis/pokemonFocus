@@ -98,6 +98,8 @@ export type SessionCapture = {
   isNew: boolean;
   levelAfter: number;
   capturedAt: string;
+  /** probabilité (0-1) qu'avait ce Pokémon d'être tiré ; absente tant que le backend ne la fournit pas */
+  dropChance?: number | null;
   pokemon: Pokemon;
 };
 
