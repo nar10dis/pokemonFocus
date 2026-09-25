@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
+import { TiltCard } from "@/components/tilt-card"
 import { SimpleSelect } from "@/components/simple-select"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -220,9 +221,10 @@ function PokemonCard({
   onToggleFavorite: () => void
 }) {
   return (
-    <li
+    <TiltCard
+      tilt={!!owned}
       className={cn(
-        "relative flex flex-col items-center gap-1 rounded-xl p-3 [content-visibility:auto] [contain-intrinsic-size:auto_190px]",
+        "relative flex flex-col items-center gap-1 rounded-xl p-3 [content-visibility:auto] [contain-intrinsic-size:auto_190px] hover:z-10",
         owned ? "tile" : "border-2 border-dashed border-poke-green-dark/60 bg-poke-green-dark/20",
       )}
     >
@@ -254,6 +256,6 @@ function PokemonCard({
       ) : (
         <p className="txt text-xs font-semibold opacity-70">{pokemon.region}</p>
       )}
-    </li>
+    </TiltCard>
   )
 }
