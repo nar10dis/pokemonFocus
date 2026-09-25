@@ -102,9 +102,13 @@ export default function WorkingPage() {
     }
     lastRolled.current = minute
     if (Math.random() >= CAPTURE_CHANCE_PER_MINUTE) return
-    setEncounter(true)
-    const id = setTimeout(() => setEncounter(false), ALERT_BUBBLE_MS)
-    return () => clearTimeout(id)
+    // via des timers : un setState synchrone dans l'effet forcerait un rendu en cascade
+    const show = setTimeout(() => setEncounter(true), 0)
+    const hide = setTimeout(() => setEncounter(false), ALERT_BUBBLE_MS)
+    return () => {
+      clearTimeout(show)
+      clearTimeout(hide)
+    }
   }, [minute, running])
 
   useEffect(() => {
