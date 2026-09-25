@@ -66,6 +66,31 @@ services:
     depends_on:
       - backend
 
+  # pg_dump quotidien dans ./backups (sur l'hôte), 14 jours gardés ;
+  # sauvegarde à la demande : `make prod-backup`, restauration : `make prod-restore`
+  backup:
+    image: docker.io/library/postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+    volumes:
+      - ./backups:/backups
+    command:
+      - sh
+      - -c
+      - |
+        while true; do
+          pg_dump -Fc -f /backups/$${PGDATABASE}-$$(date +%F).dump
+          find /backups -name '*.dump' -mtime +14 -delete
+          sleep 86400
+        done
+    depends_on:
+      db:
+        condition: service_healthy
+
   caddy:
     image: docker.io/library/caddy:2-alpine
     restart: unless-stopped

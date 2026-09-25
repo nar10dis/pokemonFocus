@@ -50,5 +50,13 @@ prod-down:
 	$(PROD) down
 prod-logs:
 	$(PROD) logs -f
+prod-backup:   ## Sauvegarde immédiate dans backups/
+	$(PROD) exec -T backup sh -c 'pg_dump -Fc -f /backups/$$PGDATABASE-$$(date +%F-%H%M).dump'
+	@ls -t backups | head -1
+prod-restore:  ## make prod-restore file=backups/pokemonfocus-2026-09-25.dump (écrase la base !)
+	@test -f "$(file)" || (echo "fichier introuvable : $(file)"; exit 1)
+	$(PROD) stop backend
+	$(PROD) exec -T backup sh -c 'pg_restore --clean --if-exists --no-owner -d $$PGDATABASE /backups/$(notdir $(file))'
+	$(PROD) start backend
 
-.PHONY: up urls down logs re migrate studio shadcn clean prod-up prod-down prod-logs
+.PHONY: up urls down logs re migrate studio shadcn clean prod-up prod-down prod-logs prod-backup prod-restore
