@@ -169,7 +169,7 @@ export default function WorkingPage() {
             className="transition-[stroke-dashoffset] duration-300 ease-linear"
           />
         </svg>
-        <div className="panel absolute inset-[34px] flex flex-col items-center justify-center gap-3 overflow-hidden rounded-full !shadow-[inset_0_0_0_2px_rgb(255_255_255/0.35)]">
+        <div className="panel absolute inset-[34px] flex flex-col items-center justify-center gap-3 overflow-hidden rounded-full !border-b-3">
           <WalkingTrainer paused={paused || done} alert={encounter && !paused && !done} />
           <p
             className="txt font-heading text-4xl tabular-nums [text-shadow:3px_3px_0_var(--bg-dark)]"
