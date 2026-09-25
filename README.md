@@ -385,6 +385,7 @@ minute et par IP : au-delà, `429` avec un message à afficher tel quel.
 | ------- | ------------------------------ | ------------------------------------ |
 | POST    | `/auth/register`, `/auth/login`, `/auth/logout` | Authentification    |
 | GET     | `/auth/me`                     | Utilisateur courant                  |
+| DELETE  | `/auth/me`                     | Supprime le compte (body `{ password }`) et toutes ses données ; `401` si mauvais mot de passe, efface le cookie |
 | GET     | `/me/profile`                  | Profil + statistiques                |
 | PATCH   | `/me`                          | Met à jour titre, région, objectif   |
 | GET     | `/me/titles`, `/me/pokemon`    | Titres disponibles, Pokédex possédé  |

@@ -41,4 +41,22 @@ shadcn:        ## make shadcn c="button card"
 clean:         ## Supprime aussi la DB et les node_modules des volumes
 	$(COMPOSE) down -v
 
-.PHONY: up urls down logs re migrate studio shadcn clean
+# --- production (sur le serveur, avec un .env de prod : voir docker-compose.prod.yml)
+PROD = $(COMPOSE) -f docker-compose.prod.yml -p pokemonfocus-prod
+
+prod-up:       ## Build + migrations/seed + lance la stack de prod
+	$(PROD) up --build -d
+prod-down:
+	$(PROD) down
+prod-logs:
+	$(PROD) logs -f
+prod-backup:   ## Sauvegarde immédiate dans backups/
+	$(PROD) exec -T backup sh -c 'pg_dump -Fc -f /backups/$$PGDATABASE-$$(date +%F-%H%M).dump'
+	@ls -t backups | head -1
+prod-restore:  ## make prod-restore file=backups/pokemonfocus-2026-09-25.dump (écrase la base !)
+	@test -f "$(file)" || (echo "fichier introuvable : $(file)"; exit 1)
+	$(PROD) stop backend
+	$(PROD) exec -T backup sh -c 'pg_restore --clean --if-exists --no-owner -d $$PGDATABASE /backups/$(notdir $(file))'
+	$(PROD) start backend
+
+.PHONY: up urls down logs re migrate studio shadcn clean prod-up prod-down prod-logs prod-backup prod-restore

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Post,
@@ -13,8 +14,10 @@ import type { CookieOptions, Response } from 'express';
 import { AUTH_COOKIE, AUTH_TTL_SECONDS } from './auth.constants.js';
 import { AuthGuard, type AuthedRequest } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
+import { DeleteAccountDto } from './dto/delete-account.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { UserId } from './user-id.decorator.js';
 
 const cookieOptions: CookieOptions = {
   httpOnly: true,
@@ -57,5 +60,18 @@ export class AuthController {
   @UseGuards(AuthGuard)
   me(@Req() req: AuthedRequest) {
     return this.auth.me(req.userId);
+  }
+
+  /** suppression définitive du compte (RGPD), mot de passe redemandé */
+  @Delete('me')
+  @UseGuards(AuthGuard, ThrottlerGuard)
+  @HttpCode(204)
+  async deleteAccount(
+    @UserId() userId: number,
+    @Body() dto: DeleteAccountDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.auth.deleteAccount(userId, dto.password);
+    res.clearCookie(AUTH_COOKIE, cookieOptions);
   }
 }

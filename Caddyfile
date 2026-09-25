@@ -1,0 +1,15 @@
+# Reverse proxy de production (docker-compose.prod.yml).
+# Caddy obtient et renouvelle seul le certificat HTTPS de {$DOMAIN}.
+{$DOMAIN} {
+	encode zstd gzip
+
+	# handle_path retire le préfixe : /api/sessions arrive sur l'API en /sessions,
+	# les routes Nest restent donc identiques en dev et en prod
+	handle_path /api/* {
+		reverse_proxy backend:4000
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

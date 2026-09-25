@@ -15,7 +15,15 @@ FROM base AS build
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npx prisma generate && npm run build
+# prisma.config.ts exige DATABASE_URL, mais `generate` ne se connecte pas à la base :
+# une URL factice suffit au build (la vraie est fournie au lancement du conteneur)
+RUN DATABASE_URL=postgresql://build@localhost/build npx prisma generate && npm run build
+
+# --- release prod : migrations + seed du Pokédex, lancé une fois avant chaque
+# démarrage du backend (cf. docker-compose.prod.yml). Part de `build` car prisma
+# et tsx sont en devDependencies, absents de l'image `prod`.
+FROM build AS release
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed"]
 
 FROM base AS prod
 ENV NODE_ENV=production

@@ -33,6 +33,11 @@ export class UsersService {
     });
   }
 
+  /** les données liées (Pokémon, thèmes, sessions, amitiés) partent en cascade */
+  delete(id: number) {
+    return this.prisma.user.delete({ where: { id } });
+  }
+
   static toPublic({ password: _password, ...user }: User): PublicUser {
     return user;
   }
