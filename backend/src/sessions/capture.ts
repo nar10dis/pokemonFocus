@@ -27,8 +27,11 @@ export function rarityCapFor(streakDays: number): number {
   return Math.max(cap, CAPTURE_CONFIG.minRarityCap);
 }
 
-/** Pokémon tiré, avec sa probabilité (0-1) d'être tiré à ce tirage, plafond de série compris. */
-export type CapturePick = Pokemon & { dropChance: number };
+/**
+ * Pokémon tiré, avec sa probabilité (0-1) d'être tiré à ce tirage : `dropChance` avec le
+ * plafond de série, `baseDropChance` sans (comme sans série).
+ */
+export type CapturePick = Pokemon & { dropChance: number; baseDropChance: number };
 
 /** Tire les Pokémon capturés pour une session de `minutes` dans `pool` (doublons possibles). */
 export function rollCaptures(
@@ -42,8 +45,14 @@ export function rollCaptures(
   const guaranteed = Math.floor(minutes / CAPTURE_CONFIG.minutesPerGuaranteedCapture);
   count = Math.max(count, guaranteed, CAPTURE_CONFIG.minCaptures);
 
+  const noStreakCap = CAPTURE_CONFIG.rarityCapByStreak[0].cap;
   const total = pool.reduce((sum, p) => sum + weight(p, maxRarityCap), 0);
-  const pick = (p: Pokemon) => ({ ...p, dropChance: weight(p, maxRarityCap) / total });
+  const baseTotal = pool.reduce((sum, p) => sum + weight(p, noStreakCap), 0);
+  const pick = (p: Pokemon) => ({
+    ...p,
+    dropChance: weight(p, maxRarityCap) / total,
+    baseDropChance: weight(p, noStreakCap) / baseTotal,
+  });
   return Array.from({ length: count }, () => {
     let r = random() * total;
     for (const p of pool) {

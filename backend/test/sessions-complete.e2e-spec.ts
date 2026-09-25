@@ -45,9 +45,9 @@ describe('SessionsService.complete (intégration, base réelle)', () => {
     });
     // A déjà possédé, B nouveau capturé deux fois, C déjà au niveau max
     const [pa, pb, pc] = [
-      { ...a, dropChance: 0.5 },
-      { ...b, dropChance: 0.3 },
-      { ...c, dropChance: 0.2 },
+      { ...a, dropChance: 0.5, baseDropChance: 0.4 },
+      { ...b, dropChance: 0.3, baseDropChance: 0.3 },
+      { ...c, dropChance: 0.2, baseDropChance: 0.3 },
     ];
     vi.mocked(rollCaptures).mockReturnValue([pa, pb, pb, pc, pa]);
     const session = await prisma.workSession.create({
@@ -57,12 +57,15 @@ describe('SessionsService.complete (intégration, base réelle)', () => {
     const result = await sessions.complete(userId, session.id);
 
     expect(result.status).toBe('COMPLETED');
-    expect(result.captures.map((x) => [x.pokemonId, x.isNew, x.levelAfter, x.dropChance])).toEqual([
-      [a.id, false, 6, 0.5],
-      [b.id, true, 1, 0.3],
-      [b.id, false, 2, 0.3],
-      [c.id, false, CAPTURE_CONFIG.maxLevel, 0.2],
-      [a.id, false, 7, 0.5],
+    expect(result.streakDays).toBe(0);
+    expect(
+      result.captures.map((x) => [x.pokemonId, x.isNew, x.levelAfter, x.dropChance, x.baseDropChance]),
+    ).toEqual([
+      [a.id, false, 6, 0.5, 0.4],
+      [b.id, true, 1, 0.3, 0.3],
+      [b.id, false, 2, 0.3, 0.3],
+      [c.id, false, CAPTURE_CONFIG.maxLevel, 0.2, 0.3],
+      [a.id, false, 7, 0.5, 0.4],
     ]);
     const owned = await prisma.ownedPokemon.findMany({
       where: { userId },
@@ -78,7 +81,7 @@ describe('SessionsService.complete (intégration, base réelle)', () => {
 
   it('refuse de terminer deux fois la même session', async () => {
     const [a] = await prisma.pokemon.findMany({ take: 1 });
-    vi.mocked(rollCaptures).mockReturnValue([{ ...a, dropChance: 1 }]);
+    vi.mocked(rollCaptures).mockReturnValue([{ ...a, dropChance: 1, baseDropChance: 1 }]);
     const session = await prisma.workSession.create({
       data: { userId, region: a.region, plannedMinutes: 5, startedAt: new Date(Date.now() - 10 * 60_000) },
     });

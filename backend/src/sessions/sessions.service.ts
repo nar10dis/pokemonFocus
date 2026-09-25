@@ -162,7 +162,7 @@ export class SessionsService {
       // on repasse le statut en premier : un double appel concurrent échoue ici
       const { count } = await tx.workSession.updateMany({
         where: { id, status: 'RUNNING' },
-        data: { status: 'COMPLETED', endedAt: new Date() },
+        data: { status: 'COMPLETED', endedAt: new Date(), streakDays },
       });
       if (count === 0) throw new ConflictException('Session déjà terminée');
 
@@ -193,7 +193,12 @@ export class SessionsService {
         });
       }
       await tx.sessionCapture.createMany({
-        data: captures.map((c, i) => ({ sessionId: id, ...c, dropChance: picks[i].dropChance })),
+        data: captures.map((c, i) => ({
+          sessionId: id,
+          ...c,
+          dropChance: picks[i].dropChance,
+          baseDropChance: picks[i].baseDropChance,
+        })),
       });
     });
     return this.get(userId, id);

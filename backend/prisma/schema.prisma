@@ -118,6 +118,9 @@ model WorkSession {
   /// cumul des pauses terminées
   pausedMs       Int           @default(0)
   endedAt        DateTime?
+  /// série de jours travaillés d'affilée utilisée pour le tirage (null : session
+  /// terminée avant ce champ, ou pas encore terminée)
+  streakDays     Int?
 
   user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme    Theme?           @relation(fields: [themeId], references: [id], onDelete: SetNull)
@@ -137,6 +140,9 @@ model SessionCapture {
   /// probabilité (0-1) de tirer ce Pokémon à ce tirage, plafond de série compris ;
   /// null pour les captures antérieures à ce champ
   dropChance Float?
+  /// même probabilité sans le bonus de série : dropChance / baseDropChance - 1
+  /// donne le bonus apporté par la série ; null pour les anciennes captures
+  baseDropChance Float?
   capturedAt DateTime @default(now())
 
   session WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)

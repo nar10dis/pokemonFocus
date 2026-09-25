@@ -401,8 +401,10 @@ minute et par IP : au-delà, `429` avec un message à afficher tel quel.
 | POST    | `/friends/requests`, `/friends/requests/:id/accept` | Envoyer / accepter |
 | DELETE  | `/friends/requests/:id`, `/friends/:userId` | Refuser / supprimer     |
 
-**Captures d'une session** — `GET /sessions/:id` (ainsi que les réponses de
-`/complete` et `/simulate`) renvoie `captures[]`, dans l'ordre du tirage :
+**Session terminée** — `GET /sessions/:id` (ainsi que les réponses de
+`/complete` et `/simulate`) renvoie aussi `streakDays` (`number | null`) : la
+série de jours travaillés d'affilée utilisée pour le tirage (`null` pour les
+sessions terminées avant ce champ). Puis `captures[]`, dans l'ordre du tirage :
 
 | Champ        | Type             | Sens                                                   |
 | ------------ | ---------------- | ------------------------------------------------------ |
@@ -410,6 +412,7 @@ minute et par IP : au-delà, `429` avec un message à afficher tel quel.
 | `isNew`      | `boolean`        | Première capture de ce Pokémon par le dresseur         |
 | `levelAfter` | `number`         | Niveau du Pokémon après cette capture                   |
 | `dropChance` | `number \| null` | Probabilité (0-1) de tirer ce Pokémon à ce tirage, plafond de série compris. `null` pour les captures antérieures à ce champ : ne rien afficher |
+| `baseDropChance` | `number \| null` | Même probabilité **sans** bonus de série. Bonus de série = `dropChance / baseDropChance - 1` (positif seulement pour les Pokémon plus rares que le plafond de série). `null` pour les anciennes captures |
 | `capturedAt` | date ISO         | Horodatage de la capture                                |
 
 ---

@@ -96,6 +96,19 @@ describe('rollCaptures', () => {
     expect(rollCaptures(duo, 0, sequence(0.7), 50)[0].dropChance).toBeCloseTo(51 / 151);
   });
 
+  it('donne aussi la chance sans bonus de série', () => {
+    const duo = [mon(1, { rarity: 1 }), mon(2, { rarity: 100 })];
+    // sans série, les deux chances sont identiques
+    const [plain] = rollCaptures(duo, 0, sequence(0.999), 100);
+    expect(plain.baseDropChance).toBeCloseTo(plain.dropChance);
+    // plafond 50 : le rare passe de 1/101 à 51/151, le commun baisse de 100/101 à 100/151
+    const [rare] = rollCaptures(duo, 0, sequence(0.7), 50);
+    expect(rare.baseDropChance).toBeCloseTo(1 / 101);
+    const [common] = rollCaptures(duo, 0, sequence(0.1), 50);
+    expect(common.baseDropChance).toBeCloseTo(100 / 101);
+    expect(common.dropChance).toBeCloseTo(100 / 151);
+  });
+
   it('rend les Pokémon à forte rareté rares', () => {
     const random = seeded(42);
     const picks = Array.from({ length: 200 }, () =>
