@@ -35,16 +35,33 @@ const MAX_MINUTES = 240
 const PRESETS = [30, 45, 60, 90]
 const PREVIEW_SIZE = 14
 
-/** échantillon stable (dépend seulement de la région) */
-function sample(list: Pokemon[], n: number) {
-  const step = Math.max(1, Math.floor(list.length / n))
-  return list.filter((_, i) => i % step === 0).slice(0, n)
+/**
+ * n Pokémon au hasard, rangés par numéro. Le tirage dépend de `seed` (tiré une fois
+ * par visite) : l'aperçu ne change pas à chaque re-rendu, seulement d'une visite à l'autre.
+ */
+function sample(list: Pokemon[], n: number, seed: number) {
+  // mulberry32 : petit générateur pseudo-aléatoire rejouable à partir d'une graine
+  let state = Math.floor(seed * 2 ** 32)
+  const random = () => {
+    state = (state + 0x6d2b79f5) | 0
+    let t = Math.imul(state ^ (state >>> 15), 1 | state)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 2 ** 32
+  }
+  const pool = [...list]
+  // mélange de Fisher-Yates, arrêté après les n premiers
+  for (let i = 0; i < Math.min(n, pool.length); i++) {
+    const j = i + Math.floor(random() * (pool.length - i))
+    ;[pool[i], pool[j]] = [pool[j], pool[i]]
+  }
+  return pool.slice(0, n).sort((a, b) => a.id - b.id)
 }
 
 export default function GoWorkPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const weekStart = useMemo(() => startOfWeek(), [])
+  const [previewSeed] = useState(() => Math.random())
   const profile = useProfile()
   const pokedex = usePokedex()
   const collection = useCollection()
@@ -89,6 +106,7 @@ export default function GoWorkPage() {
     () => pokedex.data?.filter((p) => p.region === currentRegion) ?? [],
     [pokedex.data, currentRegion],
   )
+  const preview = useMemo(() => sample(regionPokemon, PREVIEW_SIZE, previewSeed), [regionPokemon, previewSeed])
 
   if (!profile.data || !pokedex.data || !collection.data || !themes.data || !week.data) return <Loading />
 
@@ -165,7 +183,7 @@ export default function GoWorkPage() {
               Aperçu de {currentRegion} · {regionOwned}/{regionPokemon.length} capturés
             </p>
             <div className="flex flex-wrap justify-center gap-1">
-              {sample(regionPokemon, PREVIEW_SIZE).map((p) => (
+              {preview.map((p) => (
                 <PokemonImage key={p.id} pokemon={p} size={56} hidden={!owned.has(p.id)} />
               ))}
             </div>
