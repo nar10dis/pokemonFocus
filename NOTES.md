@@ -84,7 +84,8 @@ Format de chaque fiche : **Quoi** · **Pourquoi ici** · **Piège**.
 - **Pourquoi ici :** être connecté ne suffit pas ; il faut vérifier que la
   session `/sessions/42` t'appartient.
 - **Piège :** c'est la faille la plus courante (IDOR) : changer un id dans
-  l'URL et voir les données d'un autre.
+  l'URL et voir les données d'un autre. Les tests e2e le vérifient avec deux
+  vrais comptes (`backend/test/access-control.e2e-spec.ts`).
 
 ### Mots de passe hashés (bcrypt)
 - **Quoi :** on stocke une empreinte irréversible du mot de passe, jamais le
@@ -99,10 +100,87 @@ Format de chaque fiche : **Quoi** · **Pourquoi ici** · **Piège**.
   la prod un jour) passent par les mêmes étapes, dans le même ordre.
 - **Piège :** modifier une migration déjà partagée. On en crée toujours une
   nouvelle.
+- **À savoir aussi :**
+  - **Seed ≠ migration** : la migration change la *structure* (colonnes), le
+    seed les *données* de départ (le Pokédex de `pokemon.json`). Changer des
+    raretés = éditer le JSON, pas le schéma.
+  - **Colonne ajoutée après coup = nullable** : la migration ne peut pas
+    deviner la valeur des anciennes lignes ; `null` veut dire « inconnu »
+    (ex. `dropChance`).
+  - **Prisma 7** : `migrate dev` ne régénère plus le client → lancer aussi
+    `npx prisma generate`, sinon `PrismaClientValidationError`.
+  - **Après un merge qui touche le schéma : `make re`.** Le rechargement à
+    chaud ne voit pas les changements arrivés par git.
+
+### Rate limiting
+- **Quoi :** plafonner le nombre de requêtes d'une même IP sur une route
+  (`/auth/login`, `/auth/register` : 10 par minute).
+- **Pourquoi ici :** sans ça, on teste des milliers de mots de passe par
+  minute.
+- **Piège :** derrière un reverse proxy, sans `trust proxy`, toutes les
+  requêtes ont l'IP du proxy et partagent le même quota.
+
+### Problème N+1
+- **Quoi :** faire une requête par élément d'une liste au lieu d'une seule
+  pour toute la liste.
+- **Pourquoi ici :** `SessionsService.complete` faisait une requête par
+  Pokémon capturé, dans une transaction qui bloque les lignes pendant ce
+  temps. Maintenant : tout lire, calculer en mémoire, écrire en bloc.
+- **Piège :** invisible en dev avec 3 lignes, lent en prod avec 3 000.
+
+### Dépendances vulnérables (`npm audit`)
+- **Quoi :** `npm audit` compare les versions installées à une base de
+  failles connues ; `overrides` (package.json) impose la version d'une
+  dépendance indirecte.
+- **Pourquoi ici :** 9 failles au départ, dont 5 dans un paquet inutilisé.
+- **Piège :** `npm audit fix --force` proposait de rétrograder Prisma 7 → 6
+  et aurait cassé le projet. Évaluer avant de corriger : une faille n'est
+  grave que si le code vulnérable reçoit des données d'un attaquant.
+
+### Le tirage des captures
+- **Quoi :** chaque minute = un tirage à 8 % (loi binomiale : 60 min →
+  4,8 captures en moyenne, avec beaucoup d'écart), puis un tirage *pondéré*
+  du Pokémon (`poids = 101 − rareté`).
+- **Pourquoi ici :** le minimum garanti (1 capture / 20 min) coupe les
+  sessions frustrantes sans changer la moyenne ressentie ; le bonus de série
+  alourdit les rares.
+- **Piège :** un bonus n'est jamais gratuit : les chances font toujours
+  100 %, alourdir les rares allège les communs. D'où un bonus affiché
+  seulement quand il est positif.
+
+---
+
+## Tests
+
+### Des tests déterministes
+- **Quoi :** un test doit donner le même résultat à chaque exécution.
+- **Pourquoi ici :** `rollCaptures` reçoit le générateur aléatoire en
+  paramètre (injection) : le test lui donne une graine fixe, ou une suite
+  de valeurs pour viser un Pokémon précis.
+- **Piège :** un test « statistique » sous `Math.random` finit par échouer
+  au hasard, et plus personne ne lui fait confiance.
+
+### Un test qui ne peut pas échouer ne sert à rien
+- **Quoi :** vérifier qu'un test *tombe* quand on casse le code (retirer le
+  filtre `userId` fait tomber 5 tests de sécurité).
+- **Pourquoi ici :** c'est la seule preuve qu'il protège quelque chose.
+- **À savoir aussi :** `it.fails` documente un bug connu sans le corriger
+  (pool vide) ; un **test de caractérisation** fige le comportement actuel
+  *avant* un refactor ; tester **aux bornes** (pile au seuil, juste avant,
+  cas vide), là où se cachent les confusions `>` / `≥`.
 
 ---
 
 ## Frontend
+
+### Le front affiche, le back calcule
+- **Quoi :** tout ce qui compte pour le jeu (durée, captures, chances) est
+  calculé par le serveur ; le front ne fait que l'afficher.
+- **Pourquoi ici :** la chance dépend du pool de la région et de la série au
+  moment du tirage, seul le serveur la connaît. Et le JavaScript du
+  navigateur peut être trafiqué ou mis en pause par le téléphone.
+- **Piège :** recalculer « pour aller plus vite » côté front donne un
+  chiffre faux, ou une faille.
 
 ### App Router de Next.js
 - **Quoi :** l'arborescence de `src/app/` *est* le routage :
@@ -128,6 +206,65 @@ Format de chaque fiche : **Quoi** · **Pourquoi ici** · **Piège**.
 - **Pourquoi ici :** changer une couleur à un seul endroit change tout le
   site, et chaque nouvel écran garde le style DS.
 - **Piège :** écrire `#18D384` en dur dans un composant : la DA se fragmente.
+- **À savoir aussi :** un composant à props (`<PokeButton color="red">`)
+  plutôt que des classes recopiées : un bug se corrige à un seul endroit.
+  Relief des boutons : une *bordure* basse reste nette dans les coins
+  arrondis, une *box-shadow* décalée « décroche ».
+
+### Logique pure dans `src/lib/`
+- **Quoi :** les calculs d'affichage (`rarityTier`, `oddsLabel`,
+  `streakBonusLabel`, `Intl.NumberFormat` pour « 1,8 % ») vivent hors des
+  composants, sans React ni API.
+- **Pourquoi ici :** testables avec de simples valeurs, réutilisables par le
+  Pokédex.
+- **Piège :** noyer ces calculs dans le JSX : impossible à tester, recopiés
+  d'une page à l'autre.
+
+### Animer sans re-rendre (motion values)
+- **Quoi :** des valeurs animées que `motion` applique directement au DOM,
+  sans passer par le state React (cartes qui s'inclinent vers la souris).
+- **Pourquoi ici :** un `useState` mis à jour à chaque mouvement de souris
+  re-rendrait des centaines de cartes des dizaines de fois par seconde.
+- **Piège :** `rotateX`/`rotateY` sans perspective donnent une carte
+  écrasée ; il faut `transformPerspective`.
+
+### L'aléatoire dans l'interface
+- **Quoi :** tirer une graine une fois (`useState(() => Math.random())`) et
+  la rejouer ; mélanger avec Fisher-Yates.
+- **Pourquoi ici :** un `Math.random()` dans le rendu change le tirage à
+  chaque re-rendu (les silhouettes bougeaient à chaque clic).
+- **Piège :** `sort(() => Math.random() - 0.5)` a l'air de mélanger mais
+  biaise le résultat.
+
+---
+
+## Mise en production
+
+### Dev et prod
+- **Quoi :** le même code, lancé de deux façons : en dev (ton ordi, code
+  rechargé à chaud, outils installés) et en prod (un serveur, code compilé
+  et figé, image légère).
+- **Pourquoi ici :** le Dockerfile a des étapes séparées (`dev`, `build`,
+  `release`, `prod`) ; `docker-compose.prod.yml` assemble la prod.
+- **Piège :** la prod est un *endroit* (un serveur), pas une branche : on
+  déploie `main`, et on marque la version déployée avec un **tag**.
+
+### Déployer, c'est remplacer
+- **Quoi :** on fabrique la nouvelle version, l'étape `release` applique
+  migrations + seed sur la base existante, puis les conteneurs sont
+  remplacés.
+- **Pourquoi ici :** le code est jetable, les données non : la base vit
+  dans un volume qui survit aux déploiements.
+- **Piège :** revenir à l'ancien code (rollback) ne ramène pas une colonne
+  supprimée par une migration. D'où les sauvegardes, **testées** (une
+  sauvegarde jamais restaurée n'est pas une sauvegarde).
+
+### Reverse proxy (Caddy)
+- **Quoi :** un seul point d'entrée qui envoie `/` au front et `/api` à
+  l'API, et gère le HTTPS tout seul.
+- **Pourquoi ici :** même domaine → le cookie JWT (`sameSite: lax`, `secure`
+  en prod) est bien envoyé.
+- **Piège :** voir la fiche Rate limiting (`trust proxy`).
 
 ---
 
@@ -183,6 +320,16 @@ Format de chaque fiche : **Quoi** · **Pourquoi ici** · **Piège**.
   des worktrees de démarrer — et donc leurs frontends.
 - **Piège :** `docker compose up` lancé à la main ignore le Makefile et
   reprend les ports de `main` : toujours `make up`.
+- **Et la chaleur :** chaque stack = 3 conteneurs. `make up-back` pour les
+  tests backend (sans Next), `make down` en fin de tâche. Les volumes ne
+  consomment rien, ce sont les conteneurs allumés qui chauffent.
+
+### Variable d'environnement vs `.env`
+- **Quoi :** Docker Compose prend une variable du shell en priorité sur
+  celle du `.env`.
+- **Pourquoi ici :** c'est ce qui permet au Makefile d'imposer les ports.
+- **Piège :** croire que modifier le `.env` suffit quand une variable du
+  même nom traîne dans le shell.
 
 ### Permissions Claude Code par projet
 - **Quoi :** `.claude/settings.json` autorise les commandes git du workflow
