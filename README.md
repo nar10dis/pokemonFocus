@@ -24,6 +24,7 @@ rôle). Claude Code charge `CLAUDE.md` tout seul, qui importe ce README.
 7. [Mécanique de capture](#7-mécanique-de-capture)
 8. [Tests et lint](#8-tests-et-lint)
 9. [Dépannage](#9-dépannage)
+10. [Roadmap](#10-roadmap)
 
 ---
 
@@ -441,3 +442,61 @@ Pas encore de tests frontend.
   build du conteneur ; faire `make re`.
 - **« branch is already checked out »** en créant un worktree : la branche
   est déjà ouverte dans un autre dossier (`git worktree list`).
+
+---
+
+## 10. Roadmap
+
+Tenue par l'agent architecte (`main`). Chaque tâche indique la branche qui
+s'en charge et une taille : **S** (< 1 h), **M** (une demi-journée),
+**L** (plus). Cocher `[x]` à la livraison dans `main`.
+
+Décision : **pas d'application mobile** — le site suffit (il marche déjà
+dans le navigateur du téléphone). Une PWA reste possible plus tard si besoin
+d'un raccourci sur l'écran d'accueil.
+
+### Objectif 1 — Mettre le site en ligne
+
+Bloquant (sans ça, le site ne fonctionne pas en production) :
+
+- [ ] **`backend` · M — Étape de release : migrations + seed en prod.**
+  L'image `prod` lance seulement `node dist/main`, et `prisma` / `tsx` sont
+  en devDependencies donc absents. Prévoir une commande de release
+  (`prisma migrate deploy` + seed du Pokédex) exécutable avant le démarrage.
+- [ ] **`backend` · M — `docker-compose.prod.yml`.** Images `target: prod`,
+  pas de volume de code, Postgres **non exposé** (pas de port publié),
+  variables depuis un `.env` de prod, `restart: unless-stopped`.
+- [ ] **`backend` · M — Reverse proxy Caddy + HTTPS.** Front sur `/`, API sur
+  `/api`, un seul domaine : le cookie JWT est `secure` en prod (exige HTTPS)
+  et `sameSite: 'lax'` (exige le même site). Caddy obtient le certificat
+  tout seul. Adapter le préfixe `/api` côté Nest et `NEXT_PUBLIC_API_URL`.
+- [ ] **`hardening` · S — Secrets de prod.** `JWT_SECRET` long et aléatoire,
+  mot de passe Postgres fort, `.env.example` qui le rappelle, refus de
+  démarrer en prod avec les valeurs par défaut.
+
+Important (avant d'avoir de vrais utilisateurs) :
+
+- [ ] **`hardening` · M — `npm audit`** : 9 vulnérabilités côté backend
+  (dont 6 élevées) au dernier install ; vérifier aussi le frontend.
+- [ ] **`test` · M — CI GitHub Actions** : lint + tests unitaires + e2e à
+  chaque push sur `main` et sur les branches d'agent.
+- [ ] **`test` · S — Minuteur calculé côté serveur.** Vérifier par des tests
+  que la durée d'une session et les captures dépendent des horodatages du
+  serveur, pas d'un compteur côté navigateur (un onglet en veille ou
+  trafiqué ne doit rien changer).
+- [ ] **`backend` · S — Sauvegardes** : `pg_dump` quotidien + procédure de
+  restauration testée une fois.
+- [ ] **`backend` + `frontend` · M — RGPD** : page de confidentialité,
+  suppression de compte (route + écran).
+
+### Objectif 2 — Plus tard / idées
+
+- [ ] **Droits Pokémon** · L — Les artworks, sprites et le nom appartiennent
+  à Nintendo / The Pokémon Company. Acceptable pour un portfolio à accès
+  limité ; pour un site public qui grossit, prévoir ses propres créatures et
+  un autre nom (la DA façon DS peut rester).
+- [ ] **`frontend` · S — PWA** (optionnel) : manifest + icônes pour installer
+  le site sur l'écran d'accueil.
+- [ ] Équilibrage des captures (`capture.config.ts`, valeurs provisoires).
+- [ ] Features : échanges entre amis, évolutions, badges d'arène, classement
+  hebdo.
