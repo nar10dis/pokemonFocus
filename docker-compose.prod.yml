@@ -1,0 +1,88 @@
+# Stack de production : `make prod-up` (voir Makefile, section prod).
+#
+# Un seul point d'entrée public, Caddy (ports 80/443), qui sert le front sur `/`
+# et l'API sur `/api` avec un certificat HTTPS obtenu automatiquement pour DOMAIN.
+# Postgres et l'API ne publient aucun port : ils ne sont joignables que depuis
+# ce réseau Docker.
+#
+# Variables lues dans le .env du serveur : DOMAIN, POSTGRES_USER,
+# POSTGRES_PASSWORD, POSTGRES_DB, JWT_SECRET (HTTP_PORT / HTTPS_PORT en option,
+# pour tester en local sans les ports privilégiés 80/443).
+
+x-db-env: &db-env
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # migrations + seed, puis s'arrête ; le backend attend qu'il ait réussi
+  release:
+    build:
+      context: ./backend
+      target: release
+    environment:
+      <<: *db-env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    restart: unless-stopped
+    environment:
+      <<: *db-env
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: https://${DOMAIN}
+      # derrière Caddy : l'IP du client est lue dans X-Forwarded-For (rate limiting)
+      TRUST_PROXY: 1
+    depends_on:
+      release:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+      args:
+        # même domaine que le front : le cookie JWT (sameSite lax) est envoyé
+        NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  caddy:
+    image: docker.io/library/caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
