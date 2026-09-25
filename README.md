@@ -7,8 +7,9 @@ des statistiques hebdomadaires et un profil de dresseur partagé avec ses amis.
 
 Ce projet est développé en **multi-agent** : plusieurs agents Claude Code
 travaillent en parallèle, chacun sur sa branche, avec un rôle et un périmètre
-précis. Ce README est la référence commune : **tout agent le lit en entier
-avant de commencer**.
+précis. Ce README décrit le projet et les rôles ; **`CLAUDE.md`** contient
+les consignes de travail des agents (workflow git automatique, règles par
+rôle). Claude Code charge `CLAUDE.md` tout seul, qui importe ce README.
 
 ---
 
@@ -39,8 +40,21 @@ avant de commencer**.
 | `hardening` | Sécurité / clarté | Oui                | Tout le repo, par petits commits            |
 
 `main` est la branche stable. Les autres branches partent de `main` et y
-reviennent par merge (ou PR). Une branche ne merge **jamais** directement dans
+reviennent par merge. Une branche ne merge **jamais** directement dans
 une autre branche d'agent : tout passe par `main`.
+
+Les agents gèrent eux-mêmes leurs commits, leur synchro et leur livraison
+(détails dans `CLAUDE.md`) :
+
+```
+début de tâche   pull origin/main → merge main dans sa branche
+pendant          un commit par étape cohérente
+fin de tâche     merge main → lint + tests → main avance en fast-forward
+                 sur la branche → push de main et de la branche
+```
+
+Les conflits se résolvent toujours dans la branche de l'agent, jamais dans
+`main`.
 
 ### Un agent = un dossier (git worktree)
 
@@ -50,7 +64,7 @@ utilise donc un **worktree** par branche — un dossier séparé qui partage le
 même dépôt git :
 
 ```sh
-# depuis ~/pokemonFocus (qui reste sur main)
+# depuis le dossier principal pokemonFocus/ (qui reste sur main)
 git worktree add ../pokemonFocus-frontend  frontend
 git worktree add ../pokemonFocus-backend   backend
 git worktree add -b test      ../pokemonFocus-test      main
@@ -89,12 +103,12 @@ Le port de Prisma Studio (`5555`) est fixé dans `docker-compose.yml` : un seul
 
 ### Règles communes à tous les agents
 
-1. **Lire ce README en entier** avant toute modification.
+1. **Lire ce README et `CLAUDE.md`** avant toute modification.
 2. **Rester dans son périmètre.** Un agent qui a besoin d'un changement hors
    de son périmètre ne le fait pas : il le note dans son résumé de fin de
    tâche pour que l'humain le transmette à l'agent concerné.
-3. **Se synchroniser avec `main` souvent** (`git merge main` ou
-   `git rebase main`) pour limiter les conflits.
+3. **Se synchroniser avec `main` souvent** (`git merge main`, jamais de
+   rebase sur une branche poussée) pour limiter les conflits.
 4. **Petits commits, messages clairs** (en français, à l'impératif :
    « ajoute la pagination du Pokédex »).
 5. **Ne pas committer** `.env`, `node_modules`, `dist`, `.next`.
@@ -103,8 +117,8 @@ Le port de Prisma Studio (`5555`) est fixé dans `docker-compose.yml` : un seul
    réponse doit mettre à jour cette section dans le même commit.
 7. **Lint et tests au vert** avant de rendre la main
    ([section 8](#8-tests-et-lint)).
-8. C'est **l'humain qui lance les agents et merge dans `main`**. Un agent ne
-   push pas et ne merge pas sans qu'on le lui demande.
+8. **L'humain lance les agents** ; les agents livrent eux-mêmes dans `main`
+   selon le protocole de `CLAUDE.md`, jamais avec des tests rouges.
 
 ---
 
