@@ -27,7 +27,7 @@ services:
       FRONTEND_URL: http://localhost:${FRONT_PORT:-3000}
     ports:
       - "${BACK_PORT:-4000}:4000"
-      - "5555:5556"
+      - "${STUDIO_PORT:-5555}:5556"
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules

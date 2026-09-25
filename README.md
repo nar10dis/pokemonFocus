@@ -80,26 +80,35 @@ Puis on lance chaque agent dans son dossier :
 cd ../pokemonFocus-frontend && claude
 ```
 
-Chaque worktree a besoin de son propre `.env` (il n'est pas versionné) :
-`cp ../pokemonFocus/.env ../pokemonFocus-frontend/.env`.
+Tous les worktrees partagent **un seul `.env`** : celui du dossier principal,
+relié par un lien symbolique :
+`ln -s ../pokemonFocus/.env ../pokemonFocus-frontend/.env`.
 
 ### Faire tourner plusieurs stacks en même temps
 
 Docker Compose nomme le projet d'après le dossier, donc chaque worktree a ses
-propres conteneurs **et sa propre base de données**. En revanche les ports
-sont partagés : si deux worktrees font `make up` en même temps, décaler les
-ports dans leur `.env` :
+propres conteneurs **et sa propre base de données**. Les ports, eux, sont
+**calculés automatiquement par le Makefile** d'après la branche du worktree,
+il n'y a rien à configurer :
 
-| Worktree    | `FRONT_PORT` | `BACK_PORT` | `DB_PORT` |
-| ----------- | ------------ | ----------- | --------- |
-| main        | 3000         | 4000        | 5432      |
-| frontend    | 3001         | 4001        | 5433      |
-| backend     | 3002         | 4002        | 5434      |
-| test        | 3003         | 4003        | 5435      |
-| hardening   | 3004         | 4004        | 5436      |
+| Worktree    | Front | API  | DB   | Studio |
+| ----------- | ----- | ---- | ---- | ------ |
+| main        | 3000  | 4000 | 5432 | 5555   |
+| frontend    | 3001  | 4001 | 5433 | 5556   |
+| backend     | 3002  | 4002 | 5434 | 5557   |
+| test        | 3003  | 4003 | 5435 | 5558   |
+| hardening   | 3004  | 4004 | 5436 | 5559   |
 
-Le port de Prisma Studio (`5555`) est fixé dans `docker-compose.yml` : un seul
-`make studio` à la fois.
+`make urls` affiche les adresses du worktree courant (et `make up` les
+affiche à la fin). Pour voir le travail de l'agent frontend : `make up` dans
+`pokemonFocus-frontend/`, puis http://localhost:3001.
+
+⚠️ Toujours passer par `make` (`make up`, `make re`…) et pas par
+`docker compose up` directement : c'est le Makefile qui fixe les ports. Les
+commandes `docker compose exec …` restent sans risque.
+
+Chaque stack a sa propre base : un compte créé sur :3000 n'existe pas sur
+:3001, il faut s'inscrire une fois par worktree.
 
 ### Règles communes à tous les agents
 
@@ -339,12 +348,11 @@ minutes (`make logs` pour suivre). Le code est monté en volume : rechargement
 | `POSTGRES_USER`     | `pokemon`      | Utilisateur PostgreSQL                |
 | `POSTGRES_PASSWORD` | `pokemon`      | Mot de passe PostgreSQL               |
 | `POSTGRES_DB`       | `pokemonfocus` | Nom de la base                        |
-| `FRONT_PORT`        | `3000`         | Port exposé du frontend               |
-| `BACK_PORT`         | `4000`         | Port exposé de l'API                  |
-| `DB_PORT`           | `5432`         | Port exposé de PostgreSQL             |
 | `JWT_SECRET`        | `change-me`    | Clé de signature des JWT — à changer  |
 
 `JWT_SECRET` est obligatoire (le backend refuse de démarrer sans).
+Les ports (`FRONT_PORT`, `BACK_PORT`, `DB_PORT`, `STUDIO_PORT`) ne sont pas
+dans `.env` : le Makefile les calcule (section 1).
 `DATABASE_URL`, `PORT`, `FRONTEND_URL` et `NEXT_PUBLIC_API_URL` sont construits
 par `docker-compose.yml`.
 
@@ -357,7 +365,8 @@ par `docker-compose.yml`.
 | `make re`                     | `down` puis `up`                                            |
 | `make logs`                   | Suit les logs des trois services                            |
 | `make migrate name=add_user`  | Crée et applique une migration Prisma                      |
-| `make studio`                 | Prisma Studio sur http://localhost:5555                     |
+| `make studio`                 | Prisma Studio (port selon le worktree, voir `make urls`)   |
+| `make urls`                   | Affiche les adresses de la stack du worktree              |
 | `make shadcn c="button card"` | Ajoute des composants shadcn au frontend                    |
 | `make clean`                  | Arrête tout **et supprime les volumes** (base + node_modules) |
 
@@ -421,11 +430,14 @@ Pas encore de tests frontend.
 
 ## 9. Dépannage
 
-- **Port déjà utilisé** : changer `FRONT_PORT`, `BACK_PORT` ou `DB_PORT` dans
-  `.env`, puis `make re` (voir le tableau des ports par worktree, section 1).
+- **Port déjà utilisé** : vérifier qu'aucune stack n'a été lancée avec
+  `docker compose up` au lieu de `make up` (elle prendrait les ports de
+  `main`). `docker ps` montre qui utilise quoi ; `make down` puis `make up`.
+- **Le backend reste en « Created »** : un de ses ports est pris par une
+  autre stack (même cause), `make down && make up`.
 - **Erreur Prisma au démarrage** : la base n'était pas prête ou le schéma a
   changé — `make re`, ou `make clean && make up` pour repartir d'une base vide.
 - **Le frontend ne voit pas l'API** : `NEXT_PUBLIC_API_URL` est injecté au
-  build du conteneur ; après un changement de `BACK_PORT`, faire `make re`.
+  build du conteneur ; faire `make re`.
 - **« branch is already checked out »** en créant un worktree : la branche
   est déjà ouverte dans un autre dossier (`git worktree list`).

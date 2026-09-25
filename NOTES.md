@@ -174,6 +174,16 @@ Format de chaque fiche : **Quoi** · **Pourquoi ici** · **Piège**.
 - **Piège :** `.gitignore` n'agit pas sur un fichier déjà suivi : il faut
   aussi `git rm --cached <fichier>`.
 
+### Un seul `.env`, des ports calculés
+- **Quoi :** le Makefile lit la branche du worktree et en déduit les ports
+  (`frontend` → 3001, 4001…) ; le `.env` est un lien symbolique vers celui du
+  dossier principal.
+- **Pourquoi ici :** avec des ports écrits à la main dans 5 fichiers `.env`,
+  un oubli (le 5555 de Prisma Studio, codé en dur) empêchait les backends
+  des worktrees de démarrer — et donc leurs frontends.
+- **Piège :** `docker compose up` lancé à la main ignore le Makefile et
+  reprend les ports de `main` : toujours `make up`.
+
 ### Permissions Claude Code par projet
 - **Quoi :** `.claude/settings.json` autorise les commandes git du workflow
   (commit, merge, push) et interdit les dangereuses (force push,

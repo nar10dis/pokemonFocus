@@ -1,7 +1,26 @@
 COMPOSE = docker compose
 
+# Ports calculés d'après la branche du worktree : chaque agent a sa stack sans
+# collision, et un seul .env suffit (les worktrees le partagent par symlink).
+# main → 3000/4000/5432/5555, frontend → 3001/4001/5433/5556, etc.
+BRANCH := $(shell git branch --show-current)
+OFFSET_main      := 0
+OFFSET_frontend  := 1
+OFFSET_backend   := 2
+OFFSET_test      := 3
+OFFSET_hardening := 4
+OFFSET := $(or $(OFFSET_$(BRANCH)),0)
+
+export FRONT_PORT  := $(shell echo $$((3000 + $(OFFSET))))
+export BACK_PORT   := $(shell echo $$((4000 + $(OFFSET))))
+export DB_PORT     := $(shell echo $$((5432 + $(OFFSET))))
+export STUDIO_PORT := $(shell echo $$((5555 + $(OFFSET))))
+
 up:            ## Lance tout (db + back + front)
 	$(COMPOSE) up --build -d
+	@$(MAKE) --no-print-directory urls
+urls:          ## Affiche les adresses de la stack de ce worktree
+	@echo "[$(BRANCH)] front http://localhost:$(FRONT_PORT) · api http://localhost:$(BACK_PORT) · db localhost:$(DB_PORT) · studio http://localhost:$(STUDIO_PORT)"
 down:
 	$(COMPOSE) down
 logs:
@@ -10,16 +29,16 @@ re: down up
 
 migrate:       ## make migrate name=add_user
 	$(COMPOSE) exec backend npx prisma migrate dev --name $(name)
-studio:        ## Prisma Studio sur http://localhost:5555
+studio:        ## Prisma Studio sur http://localhost:$(STUDIO_PORT)
 	# Prisma Studio se bind en dur sur 127.0.0.1 (pas d'option --hostname) : on le
-	# relaie sur 0.0.0.0:5556, mappé sur le 5555 de l'hôte dans docker-compose.yml.
-	# Studio doit rester en --port 5555 pour que sa vérification d'Origin passe.
-	$(COMPOSE) exec -d backend npx prisma studio --port 5555 --browser none
-	$(COMPOSE) exec -d backend socat TCP-LISTEN:5556,fork,reuseaddr TCP:127.0.0.1:5555
+	# relaie sur 0.0.0.0:5556, mappé sur STUDIO_PORT de l'hôte dans docker-compose.yml.
+	# Studio écoute sur STUDIO_PORT lui aussi pour que sa vérification d'Origin passe.
+	$(COMPOSE) exec -d backend npx prisma studio --port $(STUDIO_PORT) --browser none
+	$(COMPOSE) exec -d backend socat TCP-LISTEN:5556,fork,reuseaddr TCP:127.0.0.1:$(STUDIO_PORT)
 shadcn:        ## make shadcn c="button card"
 	$(COMPOSE) exec frontend npx shadcn@latest add $(c)
 
 clean:         ## Supprime aussi la DB et les node_modules des volumes
 	$(COMPOSE) down -v
 
-.PHONY: up down logs re migrate studio shadcn clean
+.PHONY: up urls down logs re migrate studio shadcn clean

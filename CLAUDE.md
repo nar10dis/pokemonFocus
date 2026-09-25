@@ -126,8 +126,10 @@ Lancer au minimum ce qui concerne la partie modifiée. Si la stack ne tourne
 pas, la lancer ; si elle ne peut pas démarrer (port pris…), le dire dans le
 résumé plutôt que livrer sans vérifier.
 
-Chaque worktree a son `.env` avec ses propres ports (tableau dans le README,
-section 1). Ne pas les changer.
+Les ports sont calculés par le Makefile d'après la branche (README section
+1) : toujours lancer la stack avec `make up` / `make re`, jamais
+`docker compose up` directement. `make urls` donne les adresses. Le `.env`
+est partagé entre worktrees (symlink) : ne pas le modifier.
 
 ---
 
