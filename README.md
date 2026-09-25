@@ -368,6 +368,8 @@ par `docker-compose.yml`.
 Contrat entre `frontend` et `backend` — **à tenir à jour par l'agent backend**.
 Toutes les routes sont authentifiées par cookie JWT, sauf `POST /auth/register`
 et `POST /auth/login`.
+`POST /auth/register` et `POST /auth/login` sont limitées à 10 requêtes par
+minute et par IP : au-delà, `429` avec un message à afficher tel quel.
 
 | Méthode | Route                          | Rôle                                 |
 | ------- | ------------------------------ | ------------------------------------ |
