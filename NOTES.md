@@ -4,7 +4,7 @@ Les choix d'architecture du projet et les concepts à retenir, expliqués
 court. Tenu par l'agent architecte (branche `main`) à partir des « À
 retenir » des autres agents — voir `CLAUDE.md` section 6.
 
-**Dernière synthèse :** `ffcea67`
+**Dernière synthèse :** `6d993a7`
 
 Format de chaque fiche : **Quoi** · **Pourquoi ici** · **Piège**.
 
