@@ -362,7 +362,8 @@ par `docker-compose.yml`.
 | Commande                      | Effet                                                     |
 | ----------------------------- | --------------------------------------------------------- |
 | `make up`                     | Build + lance db, backend et frontend en arrière-plan      |
-| `make down`                   | Arrête les conteneurs                                      |
+| `make up-back`                | Lance seulement db + backend (tests, moins gourmand)       |
+| `make down`                   | Arrête les conteneurs (à faire en fin de tâche)            |
 | `make re`                     | `down` puis `up`                                            |
 | `make logs`                   | Suit les logs des trois services                            |
 | `make migrate name=add_user`  | Crée et applique une migration Prisma                      |

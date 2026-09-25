@@ -113,7 +113,8 @@ commitées, ne pas y toucher : prévenir l'humain.
 
 ## 2. Vérifications avant de livrer
 
-Depuis ton worktree, avec la stack lancée (`make up`) :
+Depuis ton worktree, avec la stack lancée (`make up`, ou `make up-back` si
+seul le backend est concerné : sans le serveur Next, bien moins gourmand) :
 
 ```sh
 docker compose exec backend npm run lint
@@ -130,6 +131,13 @@ Les ports sont calculés par le Makefile d'après la branche (README section
 1) : toujours lancer la stack avec `make up` / `make re`, jamais
 `docker compose up` directement. `make urls` donne les adresses. Le `.env`
 est partagé entre worktrees (symlink) : ne pas le modifier.
+
+**Économiser la machine** : l'humain travaille sur un seul ordinateur qui
+chauffe vite avec plusieurs stacks. À la fin de chaque tâche, après la
+livraison, **`make down`** pour arrêter sa stack (la base et les
+`node_modules` restent dans leurs volumes, le prochain `make up` repart
+vite). Ne jamais lancer `make clean` ni `docker compose down -v` : ils
+effacent la base.
 
 ---
 

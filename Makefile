@@ -19,6 +19,9 @@ export STUDIO_PORT := $(shell echo $$((5555 + $(OFFSET))))
 up:            ## Lance tout (db + back + front)
 	$(COMPOSE) up --build -d
 	@$(MAKE) --no-print-directory urls
+up-back:       ## Lance seulement db + back (tests backend, moins gourmand)
+	$(COMPOSE) up --build -d backend
+	@$(MAKE) --no-print-directory urls
 urls:          ## Affiche les adresses de la stack de ce worktree
 	@echo "[$(BRANCH)] front http://localhost:$(FRONT_PORT) · api http://localhost:$(BACK_PORT) · db localhost:$(DB_PORT) · studio http://localhost:$(STUDIO_PORT)"
 down:
@@ -59,4 +62,4 @@ prod-restore:  ## make prod-restore file=backups/pokemonfocus-2026-09-25.dump (�
 	$(PROD) exec -T backup sh -c 'pg_restore --clean --if-exists --no-owner -d $$PGDATABASE /backups/$(notdir $(file))'
 	$(PROD) start backend
 
-.PHONY: up urls down logs re migrate studio shadcn clean prod-up prod-down prod-logs prod-backup prod-restore
+.PHONY: up up-back urls down logs re migrate studio shadcn clean prod-up prod-down prod-logs prod-backup prod-restore

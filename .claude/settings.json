@@ -15,7 +15,15 @@
       "Bash(git push -u origin *)",
       "Bash(git -C * pull --ff-only origin main)",
       "Bash(git -C * merge --ff-only *)",
-      "Bash(git -C * push origin main)"
+      "Bash(git -C * push origin main)",
+      "Bash(make up)",
+      "Bash(make up-back)",
+      "Bash(make down)",
+      "Bash(make re)",
+      "Bash(make urls)",
+      "Bash(docker compose down)",
+      "Bash(docker ps*)",
+      "Bash(docker stats --no-stream*)"
     ],
     "deny": [
       "Bash(git push --force*)",
@@ -27,7 +35,12 @@
       "Bash(git reset --hard*)",
       "Bash(git rebase *)",
       "Bash(git branch -D *)",
-      "Bash(git worktree remove *)"
+      "Bash(git worktree remove *)",
+      "Bash(make clean*)",
+      "Bash(docker compose down -v*)",
+      "Bash(docker compose down --volumes*)",
+      "Bash(docker volume rm *)",
+      "Bash(docker volume prune*)"
     ]
   }
 }
