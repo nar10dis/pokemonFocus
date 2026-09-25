@@ -2,12 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { ArrowUp, Sparkles } from "lucide-react"
+import { motion } from "motion/react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useMemo } from "react"
 import { Loading, PageShell } from "@/components/page-shell"
 import { PokemonImage } from "@/components/pokemon-image"
-import { TiltCard } from "@/components/tilt-card"
 import { ProgressBar } from "@/components/progress-bar"
 import { PokeButton } from "@/components/poke-button"
 import { buttonVariants } from "@/components/ui/button"
@@ -86,12 +86,12 @@ export default function ResultPage() {
         <CardContent>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {s.captures.map((c, i) => (
-              <TiltCard
+              <motion.li
                 key={c.id}
                 initial={{ opacity: 0, scale: 0.3, rotate: -12 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.3 + i * 0.25 }}
-                className="tile relative flex flex-col items-center gap-1 rounded-xl p-3 hover:z-10"
+                className="tile relative flex flex-col items-center gap-1 rounded-xl p-3"
               >
                 <span
                   className={cn(
@@ -115,7 +115,7 @@ export default function ResultPage() {
                 {c.dropChance != null && (
                   <p className="txt text-xs font-semibold">{formatDropChance(c.dropChance)} de chance</p>
                 )}
-              </TiltCard>
+              </motion.li>
             ))}
           </ul>
         </CardContent>
